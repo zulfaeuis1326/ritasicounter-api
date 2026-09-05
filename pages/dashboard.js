@@ -4,7 +4,7 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import { atLeast, ROLE_LABEL } from "../lib/roles";
+import { atLeast } from "../lib/roles";
 import Topbar from "../components/home/Topbar";
 
 const MATERIALS = ["OB", "COAL", "SOIL", "SOLU", "MUD"];
@@ -106,18 +106,19 @@ export default function Dashboard() {
     window.location.href = "/login";
   }
 
+  const isAdmin = atLeast(authUser.role, "admin");
+  const canMonitorAll = atLeast(authUser.role, "pengawas");
+
   return (
     <div className="v4-page">
-      <Topbar
-        authUser={authUser}
-        canMonitorAll={atLeast(authUser.role, "pengawas")}
-        isAdmin={atLeast(authUser.role, "admin")}
-        onLogout={handleLogout}
-        active="dashboard"
-      />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} currentPage="dashboard" />
+
       <main className="container">
       <div className="card">
-        <div className="section-title">Rentang Data</div>
+        <div className="clock" style={{ fontSize: 18 }}>Dashboard Analitik</div>
+      </div>
+
+      <div className="card">
         <div className="material-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
           <button
             className={`material-btn ${range === "day" ? "active" : ""}`}
