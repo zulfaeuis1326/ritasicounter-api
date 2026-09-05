@@ -5,6 +5,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { atLeast, ROLE_LABEL } from "../lib/roles";
+import Topbar from "../components/home/Topbar";
 
 const MATERIALS = ["OB", "COAL", "SOIL", "SOLU", "MUD"];
 
@@ -106,19 +107,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="container">
-      <div className="card header-card">
-        <div className="clock" style={{ fontSize: 22 }}>Dashboard Analitik</div>
-        <div className="stat-row" style={{ marginTop: 8 }}>
-          <span>{authUser.username} ({ROLE_LABEL[authUser.role] || authUser.role})</span>
-          <button className="btn-mini-danger" onClick={handleLogout}>Logout</button>
-        </div>
-        <a href="/" className="hint" style={{ display: "block", textAlign: "center", marginTop: 6 }}>
-          Buka Halaman Monitoring
-        </a>
-      </div>
-
+    <div className="v4-page">
+      <Topbar
+        authUser={authUser}
+        canMonitorAll={atLeast(authUser.role, "pengawas")}
+        isAdmin={atLeast(authUser.role, "admin")}
+        onLogout={handleLogout}
+        active="dashboard"
+      />
+      <main className="container">
       <div className="card">
+        <div className="section-title">Rentang Data</div>
         <div className="material-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
           <button
             className={`material-btn ${range === "day" ? "active" : ""}`}
@@ -303,6 +302,7 @@ export default function Dashboard() {
       </div>
 
       <div className="app-footer">designed by Najib.dev</div>
+      </main>
     </div>
   );
 }

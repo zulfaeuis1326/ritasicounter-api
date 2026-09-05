@@ -359,7 +359,7 @@ function HomeContent() {
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} active="input" />
 
       <main className="container">
         <ShiftBanner recap={recap} recapError={recapError} clock={clock} />
