@@ -63,8 +63,14 @@
   --accent-glow: rgba(245, 166, 35, 0.35);
 }
 
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
 body {
   margin: 0;
+  overflow-x: hidden;
+  width: 100%;
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
@@ -674,6 +680,8 @@ a { color: var(--accent); }
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 16px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -788,25 +796,32 @@ a { color: var(--accent); }
 /* ===== Stat cards ===== */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
   margin-bottom: 14px;
 }
 .stat-card-box {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
   margin-bottom: 0;
-  flex-wrap: wrap;
+  padding: 12px 10px;
+  min-width: 0;
 }
 .stat-card-lbl {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  line-height: 1.3;
 }
-.stat-card-num { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+.stat-card-num { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+@media (min-width: 420px) {
+  .stat-card-box { padding: 18px; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 6px; }
+  .stat-card-lbl { font-size: 11px; }
+  .stat-card-num { font-size: 26px; }
+}
 .stat-card-primary { color: var(--accent); }
 .stat-card-green { color: var(--ok); }
 .stat-card-amber { color: var(--amber); }
@@ -864,13 +879,25 @@ a { color: var(--accent); }
 
 .ritasi-jam-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px 10px;
   padding: 10px 12px;
   background: var(--surface-alt);
   border-radius: 10px;
   margin-bottom: 4px;
+}
+.ritasi-jam-row > div:first-child {
+  min-width: 0;
+  flex: 1 1 160px;
+}
+.ritasi-jam-row > div:first-child .hint {
+  white-space: normal;
+  word-break: break-word;
+}
+.ritasi-jam-row > button {
+  flex-shrink: 0;
 }
 
 /* ===== Rekap tools (search + toggle + export) ===== */
