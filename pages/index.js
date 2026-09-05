@@ -49,6 +49,13 @@ function HomeContent() {
   const canClickRitasi = !!authUser && (isOperator || isAdmin);
   const needsUnitSetup = isOperator && !authUser.unit_id;
 
+  // ===== Auto-set unit untuk operator (unit terkunci, gak lewat dropdown) =====
+  useEffect(function () {
+    if (isOperator && authUser && authUser.unit_id && !selectedUnit) {
+      setSelectedUnit(String(authUser.unit_id));
+    }
+  }, [isOperator, authUser, selectedUnit]);
+
   // ===== Auth check =====
   useEffect(function () {
     fetch("/api/auth/me", { cache: "no-store" })
@@ -359,7 +366,7 @@ function HomeContent() {
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} active="input" />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} />
 
       <main className="container">
         <ShiftBanner recap={recap} recapError={recapError} clock={clock} />
@@ -483,4 +490,4 @@ function HomeContent() {
       <div className="app-footer">designed by Najib.dev</div>
     </div>
   );
-}
+                      }
