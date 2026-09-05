@@ -35,8 +35,15 @@ function LogoutIcon() {
   );
 }
 
-export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout, active }) {
+export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout, currentPage }) {
   const [theme, toggleTheme] = useTheme();
+  const page = currentPage || "input-ritasi";
+
+  function NavItem({ id, href, label, show }) {
+    if (show === false) return null;
+    if (page === id) return <span className="topbar-nav-current">{label}</span>;
+    return <a href={href}>{label}</a>;
+  }
 
   return (
     <header className="topbar">
@@ -45,16 +52,10 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout, act
         RitasiCounter
       </div>
       <nav className="topbar-nav">
-        {active === "input" ? <span className="topbar-nav-current">Input Ritasi</span> : <a href="/">Input Ritasi</a>}
-        {canMonitorAll && (
-          active === "dashboard" ? <span className="topbar-nav-current">Dashboard</span> : <a href="/dashboard">Dashboard</a>
-        )}
-        {canMonitorAll && (
-          active === "fleet" ? <span className="topbar-nav-current">Kelola Fleet</span> : <a href="/admin/fleet">Kelola Fleet</a>
-        )}
-        {isAdmin && (
-          active === "operators" ? <span className="topbar-nav-current">Kelola Akun</span> : <a href="/admin/operators">Kelola Akun</a>
-        )}
+        <NavItem id="input-ritasi" href="/" label="Input Ritasi" />
+        <NavItem id="dashboard" href="/dashboard" label="Dashboard" show={canMonitorAll} />
+        <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" show={canMonitorAll} />
+        <NavItem id="akun" href="/admin/operators" label="Kelola Akun" show={isAdmin} />
       </nav>
       <div className="topbar-spacer" />
       <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
