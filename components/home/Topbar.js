@@ -35,7 +35,7 @@ function LogoutIcon() {
   );
 }
 
-export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout }) {
+export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout, active }) {
   const [theme, toggleTheme] = useTheme();
 
   return (
@@ -45,10 +45,16 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout }) {
         RitasiCounter
       </div>
       <nav className="topbar-nav">
-        <span className="topbar-nav-current">Input Ritasi</span>
-        {canMonitorAll && <a href="/dashboard">Dashboard</a>}
-        {canMonitorAll && <a href="/admin/fleet">Kelola Fleet</a>}
-        {isAdmin && <a href="/admin/operators">Kelola Akun</a>}
+        {active === "input" ? <span className="topbar-nav-current">Input Ritasi</span> : <a href="/">Input Ritasi</a>}
+        {canMonitorAll && (
+          active === "dashboard" ? <span className="topbar-nav-current">Dashboard</span> : <a href="/dashboard">Dashboard</a>
+        )}
+        {canMonitorAll && (
+          active === "fleet" ? <span className="topbar-nav-current">Kelola Fleet</span> : <a href="/admin/fleet">Kelola Fleet</a>
+        )}
+        {isAdmin && (
+          active === "operators" ? <span className="topbar-nav-current">Kelola Akun</span> : <a href="/admin/operators">Kelola Akun</a>
+        )}
       </nav>
       <div className="topbar-spacer" />
       <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
