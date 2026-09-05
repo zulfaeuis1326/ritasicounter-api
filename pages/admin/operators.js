@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { atLeast, ALL_ROLES, ROLE_LABEL } from "../../lib/roles";
+import Topbar from "../../components/home/Topbar";
 
 export default function AdminOperators() {
   const router = useRouter();
@@ -149,14 +150,19 @@ export default function AdminOperators() {
   // Admin biasa cuma boleh set role pengawas/operator; superadmin bebas semua role.
   const assignableRoles = authUser.role === "superadmin" ? ALL_ROLES : ["pengawas", "operator"];
 
+  const isAdmin = atLeast(authUser.role, "admin");
+  const canMonitorAll = atLeast(authUser.role, "pengawas");
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  }
+
   return (
-    <div className="container">
-      <div className="card header-card">
-        <div className="clock" style={{ fontSize: 22 }}>Kelola Akun</div>
-        <a href="/" className="hint" style={{ display: "block", textAlign: "center", marginTop: 6 }}>
-          ← Kembali ke halaman input
-        </a>
-      </div>
+    <div className="v4-page">
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} currentPage="akun" />
+
+      <main className="container">
 
       {error && (
         <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>Error: {error}</div></div>
@@ -249,6 +255,7 @@ export default function AdminOperators() {
       )}
 
       <div className="app-footer">designed by Najib.dev</div>
+      </main>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { atLeast } from "../../lib/roles";
 import Combobox from "../../components/Combobox";
+import Topbar from "../../components/home/Topbar";
 
 function ChevronIcon() {
   return (
@@ -154,15 +155,19 @@ export default function KelolaFleet() {
 
   const selectedUnit = units.find((u) => String(u.id) === selectedUnitId) || null;
 
-  return (
-    <div className="container">
-      <div className="card header-card">
-        <div className="clock" style={{ fontSize: 22 }}>Kelola Fleet</div>
-        <a href="/" className="hint" style={{ display: "block", textAlign: "center", marginTop: 6 }}>
-          ← Kembali ke Monitoring
-        </a>
-      </div>
+  const isAdmin = atLeast(authUser.role, "admin");
+  const canMonitorAll = atLeast(authUser.role, "pengawas");
 
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  }
+
+  return (
+    <div className="v4-page">
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} currentPage="fleet" />
+
+      <main className="container">
       {error && (
         <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>Error: {error}</div></div>
       )}
@@ -254,6 +259,7 @@ export default function KelolaFleet() {
       </div>
 
       <div className="app-footer">designed by Najib.dev</div>
+      </main>
     </div>
   );
 }
