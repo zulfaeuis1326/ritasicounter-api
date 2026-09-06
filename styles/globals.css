@@ -63,14 +63,12 @@
   --accent-glow: rgba(245, 166, 35, 0.35);
 }
 
-html {
-  overflow-x: hidden;
-  width: 100%;
+html, body, #__next {
+  min-height: 100%;
 }
+
 body {
   margin: 0;
-  overflow-x: hidden;
-  width: 100%;
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
@@ -83,6 +81,15 @@ body {
   margin: 0 auto;
   padding: 16px;
 }
+@media (min-width: 700px) {
+  .container { max-width: 680px; padding: 20px; }
+}
+@media (min-width: 900px) {
+  .container { max-width: 1080px; padding: 24px; }
+}
+@media (min-width: 1300px) {
+  .container { max-width: 1220px; }
+}
 
 .card {
   background: var(--surface);
@@ -91,10 +98,6 @@ body {
   border-radius: 8px;
   padding: 18px;
   margin-bottom: 14px;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
 }
 
 /* Signature element: kartu header dibingkai motif garis diagonal amber/hitam,
@@ -355,6 +358,10 @@ select:focus, input:focus {
   cursor: not-allowed;
 }
 
+@media (min-width: 900px) {
+  .big-click-btn { padding: 20px; font-size: 19px; }
+}
+
 .stat-row {
   display: flex;
   justify-content: space-between;
@@ -440,8 +447,6 @@ thead th.current-hour {
 
 .table-scroll {
   overflow-x: auto;
-  width: 100%;
-  max-width: 100%;
 }
 
 .badge {
@@ -459,6 +464,7 @@ thead th.current-hour {
 
 .list-table {
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
   font-family: var(--font-body);
   font-size: 13px;
@@ -685,12 +691,14 @@ a { color: var(--accent); }
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
-  width: 100%;
-  box-sizing: border-box;
+  flex-wrap: nowrap;
   padding: 10px 16px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+}
+@media (max-width: 600px) {
+  .topbar { padding: 8px 12px; gap: 6px; }
+  .topbar-logo { font-size: 13px; }
 }
 .topbar-logo {
   display: flex;
@@ -716,8 +724,13 @@ a { color: var(--accent); }
 .topbar-nav {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.topbar-nav::-webkit-scrollbar { display: none; }
+.topbar-nav a, .topbar-nav .topbar-nav-current { flex-shrink: 0; }
 .topbar-nav a, .topbar-nav-current {
   padding: 6px 10px;
   border-radius: 8px;
@@ -802,32 +815,28 @@ a { color: var(--accent); }
 /* ===== Stat cards ===== */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(autofill, 3, 1fr);
-  gap: 8px;
+  grid-template-columns: 1fr;
+  gap: 10px;
   margin-bottom: 14px;
+}
+@media (min-width: 480px) {
+  .stat-cards { grid-template-columns: repeat(3, 1fr); }
 }
 .stat-card-box {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 0;
-  padding: 12px 10px;
-  min-width: 0;
+  flex-wrap: wrap;
 }
 .stat-card-lbl {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 600;
-  margin-bottom: 2px;
-  line-height: 1.3;
+  margin-bottom: 4px;
 }
-.stat-card-num { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-@media (min-width: 420px) {
-  .stat-card-box { padding: 18px; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 6px; }
-  .stat-card-lbl { font-size: 11px; }
-  .stat-card-num { font-size: 26px; }
-}
+.stat-card-num { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
 .stat-card-primary { color: var(--accent); }
 .stat-card-green { color: var(--ok); }
 .stat-card-amber { color: var(--amber); }
@@ -843,13 +852,9 @@ a { color: var(--accent); }
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  min-width: 0;
-}
-.v4-grid > * {
-  min-width: 0;
 }
 @media (min-width: 900px) {
-  .v4-grid { grid-template-columns: 1fr 1.3fr; gap: 16px; align-items: start; }
+  .v4-grid { grid-template-columns: 1fr 1.2fr; gap: 20px; align-items: start; }
 }
 
 .sec-title-icon {
@@ -889,21 +894,10 @@ a { color: var(--accent); }
 
 .ritasi-jam-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 10px;
+  gap: 10px;
   padding: 10px 12px;
   background: var(--surface-alt);
   border-radius: 10px;
   margin-bottom: 4px;
-}
-.ritasi-jam-row > div:first-child {
-  min-width: 0;
-  flex: 1 1 160px;
-}
-.ritasi-jam-row > div:first-child .hint {
-  white-space: normal;
-  word-break: break-word;
-}
-.ritasi-jam-row > butto
