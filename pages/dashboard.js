@@ -111,7 +111,7 @@ export default function Dashboard() {
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} currentPage="dashboard" />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="dashboard" />
 
       <main className="container">
       <div className="card">

@@ -366,7 +366,7 @@ function HomeContent() {
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={isOperator} onLogout={handleLogout} />
 
       <main className="container">
         <ShiftBanner recap={recap} recapError={recapError} clock={clock} />
@@ -490,4 +490,4 @@ function HomeContent() {
       <div className="app-footer">designed by Najib.dev</div>
     </div>
   );
-                      }
+}
