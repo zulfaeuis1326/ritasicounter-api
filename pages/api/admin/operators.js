@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      // action: "reset_unit" (default, kompatibel dengan yang lama), "set_role", atau "delete_user"
+      // action: "reset_unit" (default, kompatibel dengan yang lama), "set_role", "set_unit", atau "delete_user"
       const { userId, action, newRole } = req.body || {};
       if (!userId) return res.status(400).json({ error: "userId wajib diisi" });
 
@@ -36,6 +36,15 @@ export default async function handler(req, res) {
           return res.status(403).json({ error: "Hanya superadmin yang bisa menjadikan seseorang admin/superadmin" });
         }
         await pool.query(`UPDATE users SET role = $1 WHERE id = $2`, [newRole, userId]);
+        return res.status(200).json({ ok: true });
+      }
+
+      if (action === "set_unit") {
+        const { unitId } = req.body || {};
+        await pool.query(
+          `UPDATE users SET unit_id = $1 WHERE id = $2 AND role = 'operator'`,
+          [unitId || null, userId]
+        );
         return res.status(200).json({ ok: true });
       }
 
