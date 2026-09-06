@@ -35,9 +35,19 @@ export default function AdminOperators() {
     }
   }, []);
 
+  const [units, setUnits] = useState([]);
+  const loadUnits = useCallback(async () => {
+    try {
+      const res = await fetch("/api/units");
+      if (res.ok) setUnits(await res.json());
+    } catch (err) {
+      // gagal diam-diam, dropdown assign unit cukup kosong kalau ini gagal
+    }
+  }, []);
+
   useEffect(() => {
-    if (authUser) loadList();
-  }, [authUser, loadList]);
+    if (authUser) { loadList(); loadUnits(); }
+  }, [authUser, loadList, loadUnits]);
 
   async function handleReset(userId, username) {
     if (!confirm(`Reset unit untuk "${username}"? Dia akan diminta memilih unit lagi saat login berikutnya.`)) return;
@@ -74,6 +84,24 @@ export default function AdminOperators() {
       }
     } catch (err) {
       alert(`Gagal ubah role (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleAssignUnit(userId, username, unitId) {
+    try {
+      const res = await fetch("/api/admin/operators", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "set_unit", unitId: unitId || null }),
+      });
+      if (res.ok) {
+        await loadList();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal atur unit "${username}": ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal atur unit (koneksi/server bermasalah): ${err.message}`);
     }
   }
 
@@ -149,6 +177,7 @@ export default function AdminOperators() {
 
   // Admin biasa cuma boleh set role pengawas/operator; superadmin bebas semua role.
   const assignableRoles = authUser.role === "superadmin" ? ALL_ROLES : ["pengawas", "operator"];
+  const isSuperadmin = authUser.role === "superadmin";
 
   const isAdmin = atLeast(authUser.role, "admin");
   const canMonitorAll = atLeast(authUser.role, "pengawas");
@@ -180,29 +209,51 @@ export default function AdminOperators() {
                   : "Tidak terkunci ke unit manapun"}
               </div>
             </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-              {u.role === "operator" && u.unit_id && (
-                <button className="btn-mini-danger" onClick={() => handleReset(u.id, u.username)}>
-                  Reset Unit
-                </button>
-              )}
-              {u.id !== authUser.id && (
+            <div className="akun-row-actions">
+              {u.role === "operator" && (
                 <>
                   <select
-                    defaultValue=""
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val) handleSetRole(u.id, u.username, val);
-                      e.target.value = "";
-                    }}
+                    className="akun-unit-select"
+                    defaultValue={u.unit_id || ""}
+                    onChange={(e) => handleAssignUnit(u.id, u.username, e.target.value ? Number(e.target.value) : null)}
                   >
-                    <option value="" disabled>Ubah role...</option>
-                    {assignableRoles
-                      .filter((r) => r !== u.role)
-                      .map((r) => (
-                        <option key={r} value={r}>{ROLE_LABEL[r]}</option>
-                      ))}
+                    <option value="">Pilih unit...</option>
+                    {units.map((un) => (
+                      <option key={un.id} value={un.id}>{un.name}</option>
+                    ))}
                   </select>
+                  {u.unit_id && (
+                    <button className="btn-mini-danger" onClick={() => handleReset(u.id, u.username)}>
+                      Reset Unit
+                    </button>
+                  )}
+                  {u.id !== authUser.id && (
+                    <button className="btn-mini-danger" onClick={() => handleDelete(u.id, u.username)}>
+                      Hapus Akun
+                    </button>
+                  )}
+                </>
+              )}
+
+              {u.role !== "operator" && u.id !== authUser.id && (
+                <>
+                  {isSuperadmin && (u.role === "admin" || u.role === "pengawas") && (
+                    <select
+                      defaultValue=""
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) handleSetRole(u.id, u.username, val);
+                        e.target.value = "";
+                      }}
+                    >
+                      <option value="" disabled>Ubah role...</option>
+                      {assignableRoles
+                        .filter((r) => r !== u.role)
+                        .map((r) => (
+                          <option key={r} value={r}>{ROLE_LABEL[r]}</option>
+                        ))}
+                    </select>
+                  )}
                   {/* Admin biasa cuma boleh hapus akun pengawas/operator; superadmin bebas semua */}
                   {(authUser.role === "superadmin" || (u.role !== "admin" && u.role !== "superadmin")) && (
                     <button className="btn-mini-danger" onClick={() => handleDelete(u.id, u.username)}>
@@ -218,39 +269,39 @@ export default function AdminOperators() {
       </div>
 
       {authUser.role === "superadmin" && (
-        <div className="card">
-          <div className="section-title">Import Data Unit (PC & HD)</div>
-          <div className="hint" style={{ marginBottom: 8 }}>
-            Import sekali jalan dari data roster (42 PC + 124 HD). Aman diklik berkali-kali —
-            unit yang sudah ada otomatis dilewati, tidak akan dobel.
-          </div>
-          <button className="btn btn-secondary" onClick={handleImportRoster} disabled={importing}>
-            {importing ? "Mengimport..." : "Import Sekarang"}
-          </button>
-          {importResult && (
-            <div className="hint" style={{ marginTop: 8 }}>
-              Fleet (PC): {importResult.fleets.created} baru ditambahkan, {importResult.fleets.skipped} sudah ada (dilewati).<br />
-              Unit (HD): {importResult.units.created} baru ditambahkan, {importResult.units.skipped} sudah ada (dilewati).
+        <div className="two-col-cards">
+          <div className="card">
+            <div className="section-title">Import Data Unit (PC &amp; HD)</div>
+            <div className="hint" style={{ marginBottom: 8 }}>
+              Import sekali jalan dari data roster (42 PC + 124 HD). Aman diklik berkali-kali —
+              unit yang sudah ada otomatis dilewati, tidak akan dobel.
             </div>
-          )}
-        </div>
-      )}
+            <button className="btn btn-secondary" onClick={handleImportRoster} disabled={importing}>
+              {importing ? "Mengimport..." : "Import Sekarang"}
+            </button>
+            {importResult && (
+              <div className="hint" style={{ marginTop: 8 }}>
+                Fleet (PC): {importResult.fleets.created} baru ditambahkan, {importResult.fleets.skipped} sudah ada (dilewati).<br />
+                Unit (HD): {importResult.units.created} baru ditambahkan, {importResult.units.skipped} sudah ada (dilewati).
+              </div>
+            )}
+          </div>
 
-      {authUser.role === "superadmin" && (
-        <div className="card">
-          <div className="section-title">Bersihkan Unit Dobel</div>
-          <div className="hint" style={{ marginBottom: 8 }}>
-            Gabungin unit/PC yang namanya sama tapi kecatat dobel (beda kapitalisasi/spasi).
-            Data fleet & PIT yang udah keisi otomatis dipertahankan, gak hilang.
-          </div>
-          <button className="btn btn-secondary" onClick={handleDedupe} disabled={deduping}>
-            {deduping ? "Membersihkan..." : "Bersihkan Sekarang"}
-          </button>
-          {dedupeResult && (
-            <div className="hint" style={{ marginTop: 8 }}>
-              {dedupeResult.fleetsMerged} PC digabung, {dedupeResult.unitsMerged} unit HD digabung.
+          <div className="card">
+            <div className="section-title">Bersihkan Unit Dobel</div>
+            <div className="hint" style={{ marginBottom: 8 }}>
+              Gabungin unit/PC yang namanya sama tapi kecatat dobel (beda kapitalisasi/spasi).
+              Data fleet &amp; PIT yang udah keisi otomatis dipertahankan, gak hilang.
             </div>
-          )}
+            <button className="btn btn-secondary" onClick={handleDedupe} disabled={deduping}>
+              {deduping ? "Membersihkan..." : "Bersihkan Sekarang"}
+            </button>
+            {dedupeResult && (
+              <div className="hint" style={{ marginTop: 8 }}>
+                {dedupeResult.fleetsMerged} PC digabung, {dedupeResult.unitsMerged} unit HD digabung.
+              </div>
+            )}
+          </div>
         </div>
       )}
 
