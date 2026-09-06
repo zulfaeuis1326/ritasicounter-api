@@ -422,6 +422,64 @@ thead th.current-hour {
 
 .history-info { flex: 1; }
 
+.akun-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+.akun-unit-select {
+  width: auto;
+  min-width: 140px;
+  margin-bottom: 0;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.akun-op-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  max-width: 220px;
+}
+.akun-op-btnrow {
+  display: flex;
+  gap: 6px;
+}
+.akun-op-btnrow .btn-mini-danger {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+}
+
+.two-col-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (min-width: 900px) {
+  .two-col-cards { gap: 16px; }
+  .two-col-cards > .card { margin-bottom: 0; }
+}
+.two-col-cards > .card {
+  padding: 12px;
+  margin-bottom: 0;
+}
+.two-col-cards .section-title {
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+.two-col-cards .hint {
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+.two-col-cards .btn {
+  padding: 10px 4px;
+  font-size: 11.5px;
+}
+
 .btn-mini-danger {
   padding: 8px 12px;
   border-radius: 6px;
