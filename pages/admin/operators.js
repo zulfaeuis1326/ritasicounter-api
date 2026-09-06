@@ -160,7 +160,7 @@ export default function AdminOperators() {
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} currentPage="akun" />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="akun" />
 
       <main className="container">
 

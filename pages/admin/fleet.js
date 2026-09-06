@@ -21,6 +21,10 @@ export default function KelolaFleet() {
   const [error, setError] = useState(null);
 
   const [selectedUnitId, setSelectedUnitId] = useState("");
+  const [draftFleetId, setDraftFleetId] = useState("");
+  const [draftPitId, setDraftPitId] = useState("");
+  const [savingAssign, setSavingAssign] = useState(false);
+  const [savedMsg, setSavedMsg] = useState(false);
 
   const [showAddPit, setShowAddPit] = useState(false);
   const [showAddPc, setShowAddPc] = useState(false);
@@ -58,6 +62,13 @@ export default function KelolaFleet() {
   useEffect(() => {
     if (authUser) loadAll();
   }, [authUser, loadAll]);
+
+  useEffect(() => {
+    const u = units.find((x) => String(x.id) === selectedUnitId) || null;
+    setDraftFleetId(u && u.fleet_id ? String(u.fleet_id) : "");
+    setDraftPitId(u && u.pit_id ? String(u.pit_id) : "");
+    setSavedMsg(false);
+  }, [selectedUnitId, units]);
 
   async function handleAddPit(e) {
     e.preventDefault();
@@ -138,6 +149,21 @@ export default function KelolaFleet() {
     }
   }
 
+  async function handleSaveAssign() {
+    if (!selectedUnit) return;
+    setSavingAssign(true);
+    setSavedMsg(false);
+    try {
+      const fleetChanged = draftFleetId !== (selectedUnit.fleet_id ? String(selectedUnit.fleet_id) : "");
+      const pitChanged = draftPitId !== (selectedUnit.pit_id ? String(selectedUnit.pit_id) : "");
+      if (fleetChanged) await handleAssignFleet(selectedUnit.id, draftFleetId);
+      if (pitChanged) await handleSetUnitPit(selectedUnit.id, draftPitId);
+      setSavedMsg(true);
+    } finally {
+      setSavingAssign(false);
+    }
+  }
+
   if (authUser === undefined || authUser === null) {
     return (
       <div className="container">
@@ -165,7 +191,7 @@ export default function KelolaFleet() {
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} currentPage="fleet" />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="fleet" />
 
       <main className="container">
       {error && (
@@ -188,8 +214,8 @@ export default function KelolaFleet() {
 
             <div className="field-label" style={{ marginBottom: 6 }}>Masuk PC (Fleet)</div>
             <Combobox
-              value={selectedUnit.fleet_id ? String(selectedUnit.fleet_id) : ""}
-              onChange={(val) => handleAssignFleet(selectedUnit.id, val)}
+              value={draftFleetId}
+              onChange={setDraftFleetId}
               options={fleetOptions}
               placeholder="Cari PC, misal E520..."
               emptyLabel="-- Belum gabung PC --"
@@ -197,12 +223,24 @@ export default function KelolaFleet() {
 
             <div className="field-label" style={{ marginBottom: 6, marginTop: 12 }}>Lokasi (PIT)</div>
             <Combobox
-              value={selectedUnit.pit_id ? String(selectedUnit.pit_id) : ""}
-              onChange={(val) => handleSetUnitPit(selectedUnit.id, val)}
+              value={draftPitId}
+              onChange={setDraftPitId}
               options={pitOptions}
               placeholder="Cari lokasi..."
               emptyLabel="-- Belum ada lokasi --"
             />
+
+            <button
+              className="btn btn-primary"
+              style={{ marginTop: 14 }}
+              onClick={handleSaveAssign}
+              disabled={savingAssign}
+            >
+              {savingAssign ? "Menyimpan..." : "Simpan"}
+            </button>
+            {savedMsg && !savingAssign && (
+              <div className="hint" style={{ color: "var(--ok)", marginTop: 8 }}>Tersimpan ✓</div>
+            )}
           </div>
         )}
       </div>
