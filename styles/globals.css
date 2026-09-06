@@ -754,6 +754,85 @@ a { color: var(--accent); }
   flex-shrink: 0;
 }
 .topbar-iconbtn:hover { border-color: var(--accent); color: var(--accent); }
+
+.topbar-nav-icon { display: none; }
+.topbar-collapse-btn { display: none; }
+
+@media (min-width: 900px) {
+  html, body { overflow-x: visible; }
+  .container { max-width: 1180px; }
+
+  .v4-page { padding-left: 220px; transition: padding-left 0.18s ease; }
+  body.sidebar-collapsed .v4-page { padding-left: 64px; }
+
+  .topbar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    width: 220px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 14px;
+    border-right: 1px solid var(--border);
+    border-bottom: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: width 0.18s ease;
+    z-index: 70;
+  }
+  body.sidebar-collapsed .topbar { width: 64px; padding: 20px 10px; }
+
+  .topbar-logo { font-size: 15px; }
+  .topbar-logo-text { transition: opacity 0.12s ease; }
+  body.sidebar-collapsed .topbar-logo-text { display: none; }
+
+  .topbar-collapse-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    margin: 10px 0 6px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .topbar-collapse-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .topbar-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+    width: 100%;
+  }
+  .topbar-nav a, .topbar-nav-current {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 10px;
+  }
+  .topbar-nav-icon { display: inline-flex; flex-shrink: 0; }
+  body.sidebar-collapsed .topbar-nav-label { display: none; }
+  body.sidebar-collapsed .topbar-nav a,
+  body.sidebar-collapsed .topbar-nav-current {
+    justify-content: center;
+    padding: 9px 0;
+  }
+
+  .topbar-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+  .topbar-footer .topbar-role-badge { text-align: center; }
+  body.sidebar-collapsed .topbar-footer .topbar-role-badge { font-size: 9px; padding: 4px 2px; }
+  .topbar-footer .topbar-iconbtn { width: 100%; }
+  .topbar-footer .topbar-avatar { align-self: center; }
+}
 .topbar-avatar {
   width: 30px;
   height: 30px;
