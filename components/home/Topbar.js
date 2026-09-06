@@ -35,9 +35,10 @@ function LogoutIcon() {
   );
 }
 
-export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout, currentPage }) {
+export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, onLogout, currentPage }) {
   const [theme, toggleTheme] = useTheme();
   const page = currentPage || "input-ritasi";
+  const homeLabel = isOperator ? "Input Ritasi" : "Monitoring Ritasi";
 
   function NavItem({ id, href, label, show }) {
     if (show === false) return null;
@@ -52,7 +53,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout, cur
         RitasiCounter
       </div>
       <nav className="topbar-nav">
-        <NavItem id="input-ritasi" href="/" label="Input Ritasi" />
+        <NavItem id="input-ritasi" href="/" label={homeLabel} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" show={canMonitorAll} />
         <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Kelola Akun" show={isAdmin} />
