@@ -802,7 +802,7 @@ a { color: var(--accent); }
 /* ===== Stat cards ===== */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(autofill, 3, 1fr);
   gap: 8px;
   margin-bottom: 14px;
 }
