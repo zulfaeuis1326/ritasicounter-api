@@ -757,6 +757,11 @@ a { color: var(--accent); }
 
 .topbar-nav-icon { display: none; }
 .topbar-collapse-btn { display: none; }
+.topbar-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 @media (min-width: 900px) {
   html, body { overflow-x: visible; }
