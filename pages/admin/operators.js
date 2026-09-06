@@ -211,7 +211,7 @@ export default function AdminOperators() {
             </div>
             <div className="akun-row-actions">
               {u.role === "operator" && (
-                <>
+                <div className="akun-op-actions">
                   <select
                     className="akun-unit-select"
                     defaultValue={u.unit_id || ""}
@@ -222,17 +222,19 @@ export default function AdminOperators() {
                       <option key={un.id} value={un.id}>{un.name}</option>
                     ))}
                   </select>
-                  {u.unit_id && (
-                    <button className="btn-mini-danger" onClick={() => handleReset(u.id, u.username)}>
-                      Reset Unit
-                    </button>
-                  )}
-                  {u.id !== authUser.id && (
-                    <button className="btn-mini-danger" onClick={() => handleDelete(u.id, u.username)}>
-                      Hapus Akun
-                    </button>
-                  )}
-                </>
+                  <div className="akun-op-btnrow">
+                    {u.unit_id && (
+                      <button className="btn-mini-danger" onClick={() => handleReset(u.id, u.username)}>
+                        Reset Unit
+                      </button>
+                    )}
+                    {u.id !== authUser.id && (
+                      <button className="btn-mini-danger" onClick={() => handleDelete(u.id, u.username)}>
+                        Hapus Akun
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
 
               {u.role !== "operator" && u.id !== authUser.id && (
