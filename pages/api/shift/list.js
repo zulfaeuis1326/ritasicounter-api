@@ -12,11 +12,15 @@ export default async function handler(req, res) {
       return res.status(405).end();
     }
 
+    const q = (req.query.q || "").trim();
+
     const result = await pool.query(
       `SELECT id, shift_type, label, opened_at, closed_at, status
        FROM shifts
+       WHERE ($1 = '' OR label ILIKE '%' || $1 || '%')
        ORDER BY id DESC
-       LIMIT 30`
+       LIMIT 200`,
+      [q]
     );
     return res.status(200).json(result.rows);
   } catch (err) {
