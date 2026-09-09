@@ -147,9 +147,9 @@ function HomeContent() {
     if (!authUser || needsUnitSetup) return;
     if (isAdmin) loadUnits();
     if (canMonitorAll) {
-      loadPastShifts();
       loadFleets();
     }
+    loadPastShifts();
     loadRecap();
     loadHistory();
     const poll = setInterval(function () {
@@ -437,28 +437,36 @@ function HomeContent() {
                 <button className="btn btn-danger" onClick={handleCloseShift} disabled={!recap || !recap.shift}>
                   Tutup Shift Ini
                 </button>
-                <div className="field-label" style={{ marginTop: 14, marginBottom: 6 }}>Riwayat Shift</div>
-                <input
-                  value={shiftSearch}
-                  onChange={handleShiftSearch}
-                  placeholder="Cari shift, misal 'Shift 2' atau tanggal..."
-                  style={{ marginBottom: 8 }}
-                />
-                {pastShifts.length === 0 && (
-                  <div className="hint">
-                    {shiftSearch ? "Gak ada shift yang cocok." : "Belum ada riwayat shift."}
-                  </div>
-                )}
-                {pastShifts.map(function (s) {
-                  return (
-                    <div key={s.id} className="stat-row">
-                      <span>{s.label}</span>
-                      <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">Download</a>
-                    </div>
-                  );
-                })}
               </section>
             )}
+
+            <section className="card">
+              <h2 className="sec-title-icon">Riwayat Shift</h2>
+              <div className="hint" style={{ marginBottom: 8 }}>
+                {isAdmin
+                  ? "Cari & download shift mana aja, kapan aja — semua unit."
+                  : "Cari & download shift lama. Data yang di-export otomatis dibatasi cuma unit & ritasi kamu sendiri."}
+              </div>
+              <input
+                value={shiftSearch}
+                onChange={handleShiftSearch}
+                placeholder="Cari shift, misal 'Shift 2' atau tanggal..."
+                style={{ marginBottom: 8 }}
+              />
+              {pastShifts.length === 0 && (
+                <div className="hint">
+                  {shiftSearch ? "Gak ada shift yang cocok." : "Belum ada riwayat shift."}
+                </div>
+              )}
+              {pastShifts.map(function (s) {
+                return (
+                  <div key={s.id} className="stat-row">
+                    <span>{s.label}</span>
+                    <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">Download</a>
+                  </div>
+                );
+              })}
+            </section>
 
             <section className="card">
               <h2 className="sec-title-icon">Riwayat & Revisi Ritasi</h2>
@@ -499,4 +507,5 @@ function HomeContent() {
       <div className="app-footer">designed by Najib.dev</div>
     </div>
   );
-}
+    }
+                    
