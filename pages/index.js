@@ -34,6 +34,7 @@ function HomeContent() {
   const [recapError, setRecapError] = useState(null);
   const [history, setHistory] = useState([]);
   const [pastShifts, setPastShifts] = useState([]);
+  const [shiftSearch, setShiftSearch] = useState("");
   const [loadingClick, setLoadingClick] = useState(false);
   const [newUnitName, setNewUnitName] = useState("");
   const [showAllUnits, setShowAllUnits] = useState(false);
@@ -48,13 +49,6 @@ function HomeContent() {
   const canMonitorAll = !!authUser && atLeast(authUser.role, "pengawas");
   const canClickRitasi = !!authUser && (isOperator || isAdmin);
   const needsUnitSetup = isOperator && !authUser.unit_id;
-
-  // ===== Auto-set unit untuk operator (unit terkunci, gak lewat dropdown) =====
-  useEffect(function () {
-    if (isOperator && authUser && authUser.unit_id && !selectedUnit) {
-      setSelectedUnit(String(authUser.unit_id));
-    }
-  }, [isOperator, authUser, selectedUnit]);
 
   // ===== Auth check =====
   useEffect(function () {
@@ -127,12 +121,20 @@ function HomeContent() {
     } catch (err) { /* diamkan */ }
   }, []);
 
-  const loadPastShifts = useCallback(async function () {
+  const loadPastShifts = useCallback(async function (q) {
     try {
-      const res = await fetch("/api/shift/list");
+      const query = q !== undefined ? q : "";
+      const url = "/api/shift/list" + (query ? "?q=" + encodeURIComponent(query) : "");
+      const res = await fetch(url);
       if (res.ok) setPastShifts(await res.json());
     } catch (err) { /* diamkan */ }
   }, []);
+
+  function handleShiftSearch(e) {
+    const val = e.target.value;
+    setShiftSearch(val);
+    loadPastShifts(val);
+  }
 
   // ===== Setup unit screen loader =====
   useEffect(function () {
@@ -366,7 +368,7 @@ function HomeContent() {
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={isOperator} onLogout={handleLogout} />
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} onLogout={handleLogout} active="input" />
 
       <main className="container">
         <ShiftBanner recap={recap} recapError={recapError} clock={clock} />
@@ -435,19 +437,26 @@ function HomeContent() {
                 <button className="btn btn-danger" onClick={handleCloseShift} disabled={!recap || !recap.shift}>
                   Tutup Shift Ini
                 </button>
-                {pastShifts.length > 0 && (
-                  <>
-                    <div className="field-label" style={{ marginTop: 14, marginBottom: 6 }}>Riwayat Shift</div>
-                    {pastShifts.map(function (s) {
-                      return (
-                        <div key={s.id} className="stat-row">
-                          <span>{s.label}</span>
-                          <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">Download</a>
-                        </div>
-                      );
-                    })}
-                  </>
+                <div className="field-label" style={{ marginTop: 14, marginBottom: 6 }}>Riwayat Shift</div>
+                <input
+                  value={shiftSearch}
+                  onChange={handleShiftSearch}
+                  placeholder="Cari shift, misal 'Shift 2' atau tanggal..."
+                  style={{ marginBottom: 8 }}
+                />
+                {pastShifts.length === 0 && (
+                  <div className="hint">
+                    {shiftSearch ? "Gak ada shift yang cocok." : "Belum ada riwayat shift."}
+                  </div>
                 )}
+                {pastShifts.map(function (s) {
+                  return (
+                    <div key={s.id} className="stat-row">
+                      <span>{s.label}</span>
+                      <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">Download</a>
+                    </div>
+                  );
+                })}
               </section>
             )}
 
