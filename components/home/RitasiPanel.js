@@ -2,6 +2,14 @@ import Combobox from "../Combobox";
 
 const MATERIALS = ["OB", "COAL", "SOIL", "SOLU", "MUD"];
 
+function formatJamCell(h) {
+  if (!h || h.total === 0) return "-";
+  const entries = Object.entries(h.materials || {});
+  if (entries.length === 0) return "-";
+  if (entries.length === 1) return entries[0][0] + " x" + entries[0][1];
+  return entries.map(function (e) { return e[0] + ":" + e[1]; }).join(", ");
+}
+
 export default function RitasiPanel({
   isAdmin,
   authUser,
@@ -96,6 +104,43 @@ export default function RitasiPanel({
         <b>{selectedUnitRecap ? selectedUnitRecap.total : 0}</b>
       </div>
       {!material && <div className="hint">Pilih material dulu sebelum klik ritasi.</div>}
+
+      {selectedUnitRecap && selectedUnitRecap.hourly && selectedUnitRecap.hourly.length > 0 && (
+        <>
+          <div className="field-label" style={{ marginTop: 16, marginBottom: 6 }}>
+            Rincian Per Jam (Real-Time)
+          </div>
+          <div className="table-scroll">
+            <table className="list-table">
+              <thead>
+                <tr><th>Jam</th><th>Material</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                {selectedUnitRecap.hourly.map(function (h) {
+                  const isCurrent = recap && h.jam === recap.currentHour;
+                  return (
+                    <tr key={h.jam} className={isCurrent ? "row-selected" : ""}>
+                      <td>{String(h.jam).padStart(2, "0")}:00</td>
+                      <td>{formatJamCell(h)}</td>
+                      <td style={{ fontWeight: 700 }}>{h.total}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {!isAdmin && recap && recap.shift && (
+        <a
+          className="btn btn-secondary"
+          style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 12, textDecoration: "none" }}
+          href={"/api/shift/export?shiftId=" + recap.shift.id}
+        >
+          Export Data Saya (Excel)
+        </a>
+      )}
     </section>
   );
 }
