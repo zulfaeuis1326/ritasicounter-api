@@ -29,8 +29,8 @@ export default async function handler(req, res) {
   await ensureSchema();
   const user = await getUserFromReq(req);
   if (!user) return res.status(401).json({ error: "Belum login" });
-  if (!atLeast(user.role, "pengawas")) {
-    return res.status(403).json({ error: "Hanya pengawas ke atas yang bisa export Excel" });
+  if (!atLeast(user.role, "operator")) {
+    return res.status(403).json({ error: "Kamu tidak punya akses export" });
   }
 
   if (req.method !== "GET") {
@@ -41,7 +41,12 @@ export default async function handler(req, res) {
   const shiftId = parseInt(req.query.shiftId, 10);
   if (!shiftId) return res.status(400).json({ error: "shiftId wajib diisi" });
 
-  const recap = await buildRecap(shiftId);
+  // Operator cuma boleh export data unit & klik dia sendiri (konsisten sama isolasi
+  // data per akun di tempat lain) — bukan seluruh shift kayak pengawas/admin.
+  const onlyUnitId = user.role === "operator" ? user.unit_id : null;
+  const onlyOperatorId = user.role === "operator" ? user.id : null;
+
+  const recap = await buildRecap(shiftId, onlyUnitId, onlyOperatorId);
   if (!recap) return res.status(404).json({ error: "Shift tidak ditemukan" });
 
   const { shift, hours, units, grandTotal, grandMaterialTotals, grandHourlyTotals } = recap;
@@ -56,7 +61,9 @@ export default async function handler(req, res) {
 
   // ---- Header laporan ----
   sheet.mergeCells(1, 1, 1, totalCols);
-  sheet.getCell(1, 1).value = "LAPORAN RITASI HAULER";
+  sheet.getCell(1, 1).value = onlyUnitId && units[0]
+    ? `LAPORAN RITASI - UNIT ${units[0].name}`
+    : "LAPORAN RITASI HAULER";
   sheet.getCell(1, 1).font = { bold: true, size: 14 };
   sheet.getCell(1, 1).alignment = { horizontal: "center" };
 
