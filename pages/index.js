@@ -44,6 +44,15 @@ function DownloadIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
 export default function Home() {
   return (
     <ToastProvider>
@@ -163,6 +172,25 @@ function HomeContent() {
       if (res.ok) setPastShifts(await res.json());
     } catch (err) { /* diamkan */ }
   }, []);
+
+  async function handleDeleteShift(id, label) {
+    if (!confirm(`Hapus riwayat "${label}"? Semua data ritasi di dalamnya ikut terhapus permanen — pastikan sudah di-export kalau masih perlu.`)) return;
+    try {
+      const res = await fetch("/api/shift/list", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        loadPastShifts(shiftSearch);
+      } else {
+        const d = await res.json().catch(function () { return {}; });
+        alert("Gagal menghapus: " + (d.error || res.status));
+      }
+    } catch (err) {
+      alert("Gagal menghapus (koneksi/server bermasalah): " + err.message);
+    }
+  }
 
   function handleShiftSearch(e) {
     const val = e.target.value;
@@ -508,6 +536,16 @@ function HomeContent() {
                     <a className="shift-history-download" href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">
                       <DownloadIcon /> Excel
                     </a>
+                    {isAdmin && (
+                      <button
+                        className="shift-history-delete"
+                        onClick={function () { handleDeleteShift(s.id, s.label); }}
+                        title="Hapus riwayat shift ini"
+                        aria-label="Hapus riwayat shift ini"
+                      >
+                        <TrashIcon />
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -523,34 +561,4 @@ function HomeContent() {
                 return (
                   <div key={h.id} className="history-row">
                     <div className="history-info">
-                      <b>{h.unit_name}</b> - {h.material} - jam {String(h.jam).padStart(2, "0")}:00
-                      <div className="hint">
-                        {h.operator_name || "(tanpa nama)"} - {new Date(h.clicked_at).toLocaleTimeString("id-ID")}
-                      </div>
-                    </div>
-                    {(isAdmin || h.operator_id === authUser.id) && (
-                      <button className="btn-mini-danger" onClick={function () { handleDeleteHistory(h.id); }}>
-                        Hapus
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </section>
-          </div>
-        </div>
-      </main>
-
-      <JamManualModal
-        open={jamModalOpen}
-        onClose={function () { setJamModalOpen(false); }}
-        shiftType={recap && recap.shift ? recap.shift.shift_type : 1}
-        currentHour={recap ? recap.currentHour : 0}
-        onPick={setSelectedJam}
-      />
-
-      <div className="app-footer">designed by Najib.dev</div>
-    </div>
-  );
-    }
-    
+                      <b>{h.unit_nam
