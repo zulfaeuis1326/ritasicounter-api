@@ -561,4 +561,33 @@ function HomeContent() {
                 return (
                   <div key={h.id} className="history-row">
                     <div className="history-info">
-                      <b>{h.unit_nam
+                      <b>{h.unit_name}</b> - {h.material} - jam {String(h.jam).padStart(2, "0")}:00
+                      <div className="hint">
+                        {h.operator_name || "(tanpa nama)"} - {new Date(h.clicked_at).toLocaleTimeString("id-ID")}
+                      </div>
+                    </div>
+                    {(isAdmin || h.operator_id === authUser.id) && (
+                      <button className="btn-mini-danger" onClick={function () { handleDeleteHistory(h.id); }}>
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <JamManualModal
+        open={jamModalOpen}
+        onClose={function () { setJamModalOpen(false); }}
+        shiftType={recap && recap.shift ? recap.shift.shift_type : 1}
+        currentHour={recap ? recap.currentHour : 0}
+        onPick={setSelectedJam}
+      />
+
+      <div className="app-footer">designed by Najib.dev</div>
+    </div>
+  );
+}
