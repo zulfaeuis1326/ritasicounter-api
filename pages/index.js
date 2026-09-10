@@ -10,6 +10,40 @@ import RekapTable from "../components/home/RekapTable";
 import JamManualModal from "../components/home/JamManualModal";
 import UnitSetupScreen from "../components/home/UnitSetupScreen";
 
+function SearchIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
+
+function SunBadgeIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4" />
+      <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
+      <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
+    </svg>
+  );
+}
+
+function MoonBadgeIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.5 14.5c-1 0.3 -2 0.5 -3 0.5 -5 0 -9 -4 -9 -9 0 -1 0.2 -2 0.5 -3 -4 1 -7 4.6 -7 8.9 0 5 4.1 9.1 9.1 9.1 4.3 0 7.9 -3 8.9 -7 -0.3 0.1 -0.6 0.2 -0.5 0.5z" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
+    </svg>
+  );
+}
+
 export default function Home() {
   return (
     <ToastProvider>
@@ -447,22 +481,33 @@ function HomeContent() {
                   ? "Cari & download shift mana aja, kapan aja — semua unit."
                   : "Cari & download shift lama. Data yang di-export otomatis dibatasi cuma unit & ritasi kamu sendiri."}
               </div>
-              <input
-                value={shiftSearch}
-                onChange={handleShiftSearch}
-                placeholder="Cari shift, misal 'Shift 2' atau tanggal..."
-                style={{ marginBottom: 8 }}
-              />
+              <div className="search-box">
+                <SearchIcon />
+                <input
+                  value={shiftSearch}
+                  onChange={handleShiftSearch}
+                  placeholder="Cari shift, misal 'Shift 2' atau tanggal..."
+                />
+              </div>
               {pastShifts.length === 0 && (
                 <div className="hint">
                   {shiftSearch ? "Gak ada shift yang cocok." : "Belum ada riwayat shift."}
                 </div>
               )}
               {pastShifts.map(function (s) {
+                const isMalam = s.shift_type === 2;
                 return (
-                  <div key={s.id} className="stat-row">
-                    <span>{s.label}</span>
-                    <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">Download</a>
+                  <div key={s.id} className="shift-history-row">
+                    <span className={"shift-history-badge " + (isMalam ? "malam" : "siang")}>
+                      {isMalam ? <MoonBadgeIcon /> : <SunBadgeIcon />}
+                    </span>
+                    <div className="shift-history-info">
+                      <div className="shift-history-label">{s.label}</div>
+                      <div className="shift-history-sub">{s.status === "open" ? "Sedang berjalan" : "Sudah ditutup"}</div>
+                    </div>
+                    <a className="shift-history-download" href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">
+                      <DownloadIcon /> Excel
+                    </a>
                   </div>
                 );
               })}
@@ -508,4 +553,4 @@ function HomeContent() {
     </div>
   );
     }
-                    
+    
