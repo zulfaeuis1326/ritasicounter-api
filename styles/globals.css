@@ -63,6 +63,10 @@
   --accent-glow: rgba(245, 166, 35, 0.35);
 }
 
+html, body, #__next {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   font-family: var(--font-body);
@@ -76,6 +80,15 @@ body {
   max-width: 480px;
   margin: 0 auto;
   padding: 16px;
+}
+@media (min-width: 700px) {
+  .container { max-width: 680px; padding: 20px; }
+}
+@media (min-width: 900px) {
+  .container { max-width: 1080px; padding: 24px; }
+}
+@media (min-width: 1300px) {
+  .container { max-width: 1220px; }
 }
 
 .card {
@@ -345,6 +358,10 @@ select:focus, input:focus {
   cursor: not-allowed;
 }
 
+@media (min-width: 900px) {
+  .big-click-btn { padding: 20px; font-size: 19px; }
+}
+
 .stat-row {
   display: flex;
   justify-content: space-between;
@@ -447,6 +464,7 @@ thead th.current-hour {
 
 .list-table {
   width: 100%;
+  min-width: 560px;
   border-collapse: collapse;
   font-family: var(--font-body);
   font-size: 13px;
@@ -673,10 +691,14 @@ a { color: var(--accent); }
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   padding: 10px 16px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+}
+@media (max-width: 600px) {
+  .topbar { padding: 8px 12px; gap: 6px; }
+  .topbar-logo { font-size: 13px; }
 }
 .topbar-logo {
   display: flex;
@@ -702,8 +724,13 @@ a { color: var(--accent); }
 .topbar-nav {
   display: flex;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.topbar-nav::-webkit-scrollbar { display: none; }
+.topbar-nav a, .topbar-nav .topbar-nav-current { flex-shrink: 0; }
 .topbar-nav a, .topbar-nav-current {
   padding: 6px 10px;
   border-radius: 8px;
@@ -754,6 +781,106 @@ a { color: var(--accent); }
   flex-shrink: 0;
 }
 
+/* Wrapper kontrol kanan (badge role, toggle tema, logout, avatar) */
+.topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Hamburger -- disembunyikan di layar lebar, ditampilkan hanya di mobile */
+.topbar-hamburger-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 700px) {
+  .topbar-nav,
+  .topbar-controls { display: none; }
+  .topbar-hamburger-btn { display: flex; }
+}
+
+/* Backdrop menutupi seluruh halaman di BAWAH panel, menutup panel saat diklik */
+.topbar-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 18, 24, 0.45);
+  z-index: 90;
+}
+
+/* Panel dropdown -- menempel tepat di bawah topbar, TIDAK menimpa konten
+   karena z-index-nya di atas backdrop dan backdrop di atas konten halaman */
+.topbar-mobile-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  z-index: 100;
+  padding: 14px 16px 18px;
+}
+.topbar-mobile-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.topbar-mobile-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+}
+.topbar-mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+.topbar-mobile-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text);
+}
+.topbar-mobile-nav-item:hover { background: var(--accent-soft); color: var(--accent); }
+.topbar-mobile-nav-current { background: var(--accent-soft); color: var(--accent); }
+.topbar-mobile-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.topbar-mobile-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ===== Shift banner ===== */
 .shift-banner {
   display: flex;
@@ -772,282 +899,4 @@ a { color: var(--accent); }
   background: rgba(255, 255, 255, 0.22);
   padding: 3px 10px;
   border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.shift-banner-clock {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 18px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* ===== Stat cards ===== */
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.stat-card-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 6px;
-  margin-bottom: 0;
-  flex-wrap: wrap;
-}
-.stat-card-lbl {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.stat-card-num { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-.stat-card-primary { color: var(--accent); }
-.stat-card-green { color: var(--ok); }
-.stat-card-amber { color: var(--amber); }
-.stat-card-trend {
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-/* ===== Layout grid (panel klik + kolom kanan) ===== */
-.v4-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-}
-@media (min-width: 900px) {
-  .v4-grid { grid-template-columns: 1fr 1.3fr; gap: 16px; align-items: start; }
-}
-
-.sec-title-icon {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-/* ===== Material grid (dengan angka rit per material) ===== */
-.mat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.mat-btn {
-  padding: 12px 6px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 700;
-  font-size: 13.5px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
-.mat-btn.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.mat-btn-cnt { font-size: 10px; font-weight: 500; color: var(--text-muted); }
-.mat-btn.active .mat-btn-cnt { color: var(--accent); }
-
-.ritasi-jam-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--surface-alt);
-  border-radius: 10px;
-  margin-bottom: 4px;
-}
-
-/* ===== Rekap tools (search + toggle + export) ===== */
-.rekap-tools {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-.rekap-search {
-  flex: 1;
-  min-width: 140px;
-  padding: 9px 12px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 13px;
-}
-.rekap-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-muted);
-  cursor: pointer;
-  white-space: nowrap;
-}
-.rekap-export-btn { margin-left: auto; white-space: nowrap; }
-
-.btn-primary {
-  background: var(--accent);
-  color: var(--accent-contrast);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.btn-primary:hover:not(:disabled) { opacity: 0.9; }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* ===== Modal (jam ritasi manual) ===== */
-.modal-bg {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.55);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal {
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 22px;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-}
-.modal h3 { font-family: var(--font-display); font-size: 16px; margin-bottom: 4px; color: var(--text); }
-.modal-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; }
-.jam-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.jam-grid button {
-  padding: 10px 4px;
-  border-radius: 9px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-weight: 600;
-  font-size: 12.5px;
-  cursor: pointer;
-}
-.jam-grid button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-.jam-grid button:disabled { opacity: 0.35; cursor: not-allowed; }
-.jam-grid button.current { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
-.modal-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-
-/* ===== Toast ===== */
-.toast-stack {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 300;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  width: calc(100% - 32px);
-  max-width: 380px;
-}
-.toast {
-  background: var(--text);
-  color: var(--bg);
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  text-align: center;
-}
-.toast-error { background: var(--danger); color: var(--accent-contrast); }
-.toast-info { background: var(--text); }
-
-/* ===== Search box (dengan ikon) — dipakai di Riwayat Shift ===== */
-.search-box {
-  position: relative;
-  margin-bottom: 10px;
-}
-.search-box svg {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  pointer-events: none;
-}
-.search-box input {
-  padding-left: 38px;
-  margin-bottom: 0;
-}
-
-/* ===== Riwayat Shift — daftar rapi dengan badge shift & tombol download ===== */
-.shift-history-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 4px;
-  border-bottom: 1px solid var(--border);
-}
-.shift-history-row:last-child { border-bottom: none; }
-.shift-history-badge {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.shift-history-badge.siang { background: var(--amber-soft); color: var(--amber); }
-.shift-history-badge.malam { background: var(--accent-soft); color: var(--accent); }
-.shift-history-info { flex: 1; min-width: 0; }
-.shift-history-label { font-weight: 600; font-size: 13.5px; color: var(--text); }
-.shift-history-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-.shift-history-download {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 7px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  font-size: 12px;
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.shift-history-download:hover { background: var(--accent-soft); }
-.shift-history-delete {
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.shift-history-delete:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-soft, transparent); }
+  font-size
