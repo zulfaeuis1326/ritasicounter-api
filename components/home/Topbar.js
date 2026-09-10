@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import { ROLE_LABEL } from "../../lib/roles";
 
@@ -35,81 +35,64 @@ function LogoutIcon() {
     </svg>
   );
 }
-function CollapseIcon({ collapsed }) {
+function MenuIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsed ? "rotate(180deg)" : "none" }}>
-      <polyline points="15 6 9 12 15 18" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" />
     </svg>
   );
 }
-function ClickIcon() {
+function CloseIcon() {
   return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 3v3M3 9h3M4.5 4.5l2 2M18.5 4.5l-2 2" />
-      <path d="M12 12l9 3-4 2-2 4-3-9z" />
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <line x1="5" y1="5" x2="19" y2="19" /><line x1="19" y1="5" x2="5" y2="19" />
     </svg>
   );
 }
-function ChartIcon() {
+function InputIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="4" y1="20" x2="20" y2="20" />
-      <rect x="6" y="12" width="3" height="8" /><rect x="14" y="8" width="3" height="12" /><rect x="10.5" y="4" width="3" height="16" />
+      <path d="M12 2l1.8 4.6L18 8l-4.2 1.4L12 14l-1.8-4.6L6 8l4.2-1.4z" />
+      <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z" />
+    </svg>
+  );
+}
+function DashIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="10" width="4" height="10" /><rect x="10" y="6" width="4" height="14" /><rect x="16" y="13" width="4" height="7" />
     </svg>
   );
 }
 function TruckIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="7" width="13" height="10" /><path d="M14 10h4l4 4v3h-8z" />
-      <circle cx="6" cy="19" r="1.6" /><circle cx="17" cy="19" r="1.6" />
+      <rect x="1" y="7" width="13" height="9" /><path d="M14 10h4l3 3v3h-7z" />
+      <circle cx="6" cy="18" r="1.6" /><circle cx="17.5" cy="18" r="1.6" />
     </svg>
   );
 }
-function UsersIcon() {
+function PeopleIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" />
-      <circle cx="17.5" cy="8.5" r="2.4" /><path d="M16.5 14.2c2.6 0.4 4.5 2.4 4.5 5.3" />
+      <circle cx="9" cy="8" r="3" /><path d="M2 21v-1a6 6 0 0 1 12 0v1" />
+      <circle cx="17.5" cy="9.5" r="2.3" /><path d="M15.5 21v-1a4.5 4.5 0 0 1 7 0v1" />
     </svg>
   );
 }
 
-const SIDEBAR_KEY = "rc_sidebar_collapsed";
+const NAV_ITEMS = [
+  { key: "input", href: "/", label: "Monitoring Ritasi", icon: InputIcon, show: () => true },
+  { key: "dashboard", href: "/dashboard", label: "Dashboard", icon: DashIcon, show: (p) => p.canMonitorAll },
+  { key: "fleet", href: "/admin/fleet", label: "Kelola Fleet", icon: TruckIcon, show: (p) => p.canMonitorAll },
+  { key: "operators", href: "/admin/operators", label: "Kelola Akun", icon: PeopleIcon, show: (p) => p.isAdmin },
+];
 
-export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, onLogout, currentPage }) {
+export default function Topbar({ authUser, canMonitorAll, isAdmin, onLogout, active }) {
   const [theme, toggleTheme] = useTheme();
-  const [collapsed, setCollapsed] = useState(false);
-  const page = currentPage || "input-ritasi";
-  const homeLabel = isOperator ? "Input Ritasi" : "Monitoring Ritasi";
-
-  useEffect(function () {
-    const saved = window.localStorage.getItem(SIDEBAR_KEY) === "1";
-    setCollapsed(saved);
-    document.body.classList.toggle("sidebar-collapsed", saved);
-  }, []);
-
-  function handleToggleSidebar() {
-    setCollapsed(function (prev) {
-      const next = !prev;
-      window.localStorage.setItem(SIDEBAR_KEY, next ? "1" : "0");
-      document.body.classList.toggle("sidebar-collapsed", next);
-      return next;
-    });
-  }
-
-  function NavItem({ id, href, label, icon, show }) {
-    if (show === false) return null;
-    const isCurrent = page === id;
-    const content = (
-      <>
-        <span className="topbar-nav-icon">{icon}</span>
-        <span className="topbar-nav-label">{label}</span>
-      </>
-    );
-    if (isCurrent) return <span className="topbar-nav-current" title={label}>{content}</span>;
-    return <a href={href} title={label}>{content}</a>;
-  }
+  const [menuOpen, setMenuOpen] = useState(false);
+  const perms = { canMonitorAll, isAdmin };
+  const visibleItems = NAV_ITEMS.filter((item) => item.show(perms));
 
   return (
     <header className="topbar">
@@ -117,17 +100,23 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
         <span className="topbar-mark"><LogoMark /></span>
         <span className="topbar-logo-text">RitasiCounter</span>
       </div>
-      <button className="topbar-collapse-btn" onClick={handleToggleSidebar} title={collapsed ? "Buka sidebar" : "Ciutkan sidebar"} aria-label="Toggle sidebar">
-        <CollapseIcon collapsed={collapsed} />
-      </button>
+
+      {/* Nav baris horizontal -- tampil di layar lebar, disembunyikan di mobile lewat CSS */}
       <nav className="topbar-nav">
-        <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
-        <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
-        <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" icon={<TruckIcon />} show={canMonitorAll} />
-        <NavItem id="akun" href="/admin/operators" label="Kelola Akun" icon={<UsersIcon />} show={isAdmin} />
+        {visibleItems.map((item) => {
+          const Icon = item.icon;
+          return active === item.key ? (
+            <span key={item.key} className="topbar-nav-current"><Icon /> {item.label}</span>
+          ) : (
+            <a key={item.key} href={item.href}><Icon /> {item.label}</a>
+          );
+        })}
       </nav>
+
       <div className="topbar-spacer" />
-      <div className="topbar-footer">
+
+      {/* Kontrol kanan -- tampil di layar lebar */}
+      <div className="topbar-controls">
         <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
         {theme !== null && (
           <button className="topbar-iconbtn" onClick={toggleTheme} title="Ganti tema" aria-label="Ganti tema">
@@ -139,6 +128,64 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
         </button>
         <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
       </div>
+
+      {/* Hamburger -- HANYA tampil di mobile lewat CSS, jadi satu-satunya trigger menu */}
+      <button
+        className="topbar-hamburger-btn"
+        onClick={() => setMenuOpen(true)}
+        aria-label="Buka menu"
+        aria-expanded={menuOpen}
+      >
+        <MenuIcon />
+      </button>
+
+      {/* Backdrop + panel dropdown mobile */}
+      {menuOpen && (
+        <>
+          <div className="topbar-mobile-backdrop" onClick={() => setMenuOpen(false)} />
+          <div className="topbar-mobile-panel" role="dialog" aria-modal="true">
+            <div className="topbar-mobile-panel-header">
+              <span className="topbar-mobile-panel-title">
+                <span className="topbar-mark"><LogoMark /></span> RitasiCounter
+              </span>
+              <button className="topbar-iconbtn" onClick={() => setMenuOpen(false)} aria-label="Tutup menu">
+                <CloseIcon />
+              </button>
+            </div>
+
+            <nav className="topbar-mobile-nav">
+              {visibleItems.map((item) => {
+                const Icon = item.icon;
+                return active === item.key ? (
+                  <span key={item.key} className="topbar-mobile-nav-item topbar-mobile-nav-current">
+                    <Icon /> {item.label}
+                  </span>
+                ) : (
+                  <a key={item.key} href={item.href} className="topbar-mobile-nav-item">
+                    <Icon /> {item.label}
+                  </a>
+                );
+              })}
+            </nav>
+
+            <div className="topbar-mobile-panel-footer">
+              <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
+              <div className="topbar-mobile-footer-actions">
+                {theme !== null && (
+                  <button className="topbar-iconbtn" onClick={toggleTheme} title="Ganti tema" aria-label="Ganti tema">
+                    {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+                  </button>
+                )}
+                <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
+                  <LogoutIcon />
+                </button>
+                <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </header>
   );
-}
+    }
+    
