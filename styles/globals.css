@@ -63,14 +63,8 @@
   --accent-glow: rgba(245, 166, 35, 0.35);
 }
 
-html {
-  overflow-x: hidden;
-  width: 100%;
-}
 body {
   margin: 0;
-  overflow-x: hidden;
-  width: 100%;
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
@@ -91,10 +85,6 @@ body {
   border-radius: 8px;
   padding: 18px;
   margin-bottom: 14px;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
 }
 
 /* Signature element: kartu header dibingkai motif garis diagonal amber/hitam,
@@ -422,64 +412,6 @@ thead th.current-hour {
 
 .history-info { flex: 1; }
 
-.akun-row-actions {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-}
-.akun-unit-select {
-  width: auto;
-  min-width: 140px;
-  margin-bottom: 0;
-  padding: 8px 10px;
-  font-size: 13px;
-}
-.akun-op-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  width: 100%;
-  max-width: 220px;
-}
-.akun-op-btnrow {
-  display: flex;
-  gap: 6px;
-}
-.akun-op-btnrow .btn-mini-danger {
-  flex: 1;
-  margin: 0;
-  text-align: center;
-}
-
-.two-col-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-@media (min-width: 900px) {
-  .two-col-cards { gap: 16px; }
-  .two-col-cards > .card { margin-bottom: 0; }
-}
-.two-col-cards > .card {
-  padding: 12px;
-  margin-bottom: 0;
-}
-.two-col-cards .section-title {
-  font-size: 11px;
-  margin-bottom: 5px;
-}
-.two-col-cards .hint {
-  font-size: 10.5px;
-  line-height: 1.35;
-}
-.two-col-cards .btn {
-  padding: 10px 4px;
-  font-size: 11.5px;
-}
-
 .btn-mini-danger {
   padding: 8px 12px;
   border-radius: 6px;
@@ -498,8 +430,6 @@ thead th.current-hour {
 
 .table-scroll {
   overflow-x: auto;
-  width: 100%;
-  max-width: 100%;
 }
 
 .badge {
@@ -744,8 +674,6 @@ a { color: var(--accent); }
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  width: 100%;
-  box-sizing: border-box;
   padding: 10px 16px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -812,98 +740,6 @@ a { color: var(--accent); }
   flex-shrink: 0;
 }
 .topbar-iconbtn:hover { border-color: var(--accent); color: var(--accent); }
-
-.topbar-nav-icon { display: none; }
-.topbar-collapse-btn { display: none; }
-.topbar-footer {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-@media (min-width: 900px) {
-  html, body { overflow-x: visible; }
-  .container { max-width: 920px; }
-
-  .history-row {
-    display: grid;
-    grid-template-columns: minmax(220px, 1fr) auto;
-    gap: 16px;
-    justify-content: normal;
-  }
-  .history-row > div:last-child { justify-content: flex-end; }
-
-  .v4-page { padding-left: 220px; transition: padding-left 0.18s ease; }
-  body.sidebar-collapsed .v4-page { padding-left: 64px; }
-
-  .topbar {
-    position: fixed;
-    top: 0; left: 0;
-    height: 100vh;
-    width: 220px;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 20px 14px;
-    border-right: 1px solid var(--border);
-    border-bottom: none;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: width 0.18s ease;
-    z-index: 70;
-  }
-  body.sidebar-collapsed .topbar { width: 64px; padding: 20px 10px; }
-
-  .topbar-logo { font-size: 15px; }
-  .topbar-logo-text { transition: opacity 0.12s ease; }
-  body.sidebar-collapsed .topbar-logo-text { display: none; }
-
-  .topbar-collapse-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px; height: 26px;
-    margin: 10px 0 6px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--surface-alt);
-    color: var(--text-muted);
-    cursor: pointer;
-  }
-  .topbar-collapse-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .topbar-nav {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 3px;
-    width: 100%;
-  }
-  .topbar-nav a, .topbar-nav-current {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 9px 10px;
-  }
-  .topbar-nav-icon { display: inline-flex; flex-shrink: 0; }
-  body.sidebar-collapsed .topbar-nav-label { display: none; }
-  body.sidebar-collapsed .topbar-nav a,
-  body.sidebar-collapsed .topbar-nav-current {
-    justify-content: center;
-    padding: 9px 0;
-  }
-
-  .topbar-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    width: 100%;
-  }
-  .topbar-footer .topbar-role-badge { text-align: center; }
-  body.sidebar-collapsed .topbar-footer .topbar-role-badge { font-size: 9px; padding: 4px 2px; }
-  .topbar-footer .topbar-iconbtn { width: 100%; }
-  .topbar-footer .topbar-avatar { align-self: center; }
-}
 .topbar-avatar {
   width: 30px;
   height: 30px;
@@ -952,32 +788,25 @@ a { color: var(--accent); }
 /* ===== Stat cards ===== */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
   margin-bottom: 14px;
 }
 .stat-card-box {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 0;
-  padding: 12px 10px;
-  min-width: 0;
+  flex-wrap: wrap;
 }
 .stat-card-lbl {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 600;
-  margin-bottom: 2px;
-  line-height: 1.3;
+  margin-bottom: 4px;
 }
-.stat-card-num { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-@media (min-width: 420px) {
-  .stat-card-box { padding: 18px; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 6px; }
-  .stat-card-lbl { font-size: 11px; }
-  .stat-card-num { font-size: 26px; }
-}
+.stat-card-num { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
 .stat-card-primary { color: var(--accent); }
 .stat-card-green { color: var(--ok); }
 .stat-card-amber { color: var(--amber); }
@@ -993,10 +822,6 @@ a { color: var(--accent); }
   display: grid;
   grid-template-columns: 1fr;
   gap: 0;
-  min-width: 0;
-}
-.v4-grid > * {
-  min-width: 0;
 }
 @media (min-width: 900px) {
   .v4-grid { grid-template-columns: 1fr 1.3fr; gap: 16px; align-items: start; }
@@ -1039,25 +864,13 @@ a { color: var(--accent); }
 
 .ritasi-jam-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 10px;
+  gap: 10px;
   padding: 10px 12px;
   background: var(--surface-alt);
   border-radius: 10px;
   margin-bottom: 4px;
-}
-.ritasi-jam-row > div:first-child {
-  min-width: 0;
-  flex: 1 1 160px;
-}
-.ritasi-jam-row > div:first-child .hint {
-  white-space: normal;
-  word-break: break-word;
-}
-.ritasi-jam-row > button {
-  flex-shrink: 0;
 }
 
 /* ===== Rekap tools (search + toggle + export) ===== */
@@ -1167,3 +980,60 @@ a { color: var(--accent); }
 }
 .toast-error { background: var(--danger); color: var(--accent-contrast); }
 .toast-info { background: var(--text); }
+
+/* ===== Search box (dengan ikon) — dipakai di Riwayat Shift ===== */
+.search-box {
+  position: relative;
+  margin-bottom: 10px;
+}
+.search-box svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.search-box input {
+  padding-left: 38px;
+  margin-bottom: 0;
+}
+
+/* ===== Riwayat Shift — daftar rapi dengan badge shift & tombol download ===== */
+.shift-history-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.shift-history-row:last-child { border-bottom: none; }
+.shift-history-badge {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shift-history-badge.siang { background: var(--amber-soft); color: var(--amber); }
+.shift-history-badge.malam { background: var(--accent-soft); color: var(--accent); }
+.shift-history-info { flex: 1; min-width: 0; }
+.shift-history-label { font-weight: 600; font-size: 13.5px; color: var(--text); }
+.shift-history-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.shift-history-download {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.shift-history-download:hover { background: var(--accent-soft); }
