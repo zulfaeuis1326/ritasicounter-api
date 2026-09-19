@@ -1,3 +1,5 @@
+import Combobox from "../Combobox";
+
 export default function UnitSetupScreen({
   authUser,
   setupUnits,
@@ -18,19 +20,15 @@ export default function UnitSetupScreen({
         </div>
       </div>
       <div className="card">
-        {setupUnits.length === 0 && <div className="hint">Belum ada unit terdaftar — daftarkan unit kamu sendiri di bawah.</div>}
-        {setupUnits.map(function (u) {
-          return (
-            <button
-              key={u.id}
-              className="btn btn-secondary"
-              disabled={settingUnit}
-              onClick={function () { onSetUnit(u.id); }}
-            >
-              {u.name}
-            </button>
-          );
-        })}
+        <div className="field-label" style={{ marginBottom: 6 }}>Unit</div>
+        <Combobox
+          value=""
+          onChange={function (unitId) { if (unitId && !settingUnit) onSetUnit(unitId); }}
+          options={setupUnits.map(function (u) { return { value: String(u.id), label: u.name }; })}
+          placeholder="Cari unit kamu..."
+          emptyLabel={setupUnits.length === 0 ? "Belum ada unit terdaftar" : null}
+        />
+        {settingUnit && <div className="hint" style={{ marginTop: 8 }}>Menyimpan pilihan unit...</div>}
       </div>
       <div className="card">
         <div className="section-title">Nomor unit kamu tidak ada di atas?</div>
@@ -46,7 +44,7 @@ export default function UnitSetupScreen({
             Daftarkan
           </button>
         </form>
-        <div className="hint">Ketik nomor unit kamu sendiri kalau belum ada di daftar tombol di atas.</div>
+        <div className="hint">Ketik nomor unit kamu sendiri kalau belum ada di daftar di atas.</div>
       </div>
       <div className="card">
         <button className="btn-mini-danger" onClick={onLogout}>Logout</button>
