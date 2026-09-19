@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Combobox from "../components/Combobox";
 
 function EyeIcon() {
   return (
@@ -140,23 +141,19 @@ export default function Register() {
           {jabatan === "operator" && (
             <div className="field-group">
               <label className="field-label" htmlFor="unit">Unit Kamu</label>
-              <select
-                id="unit"
-                className="field-input"
+              <Combobox
                 value={selectedUnitId}
-                onChange={function (e) { setSelectedUnitId(e.target.value); }}
-                style={{ marginBottom: 8 }}
-              >
-                <option value="">-- Pilih unit yang sudah ada --</option>
-                {units.map(function (u) {
-                  return <option key={u.id} value={u.id}>{u.name}</option>;
-                })}
-              </select>
+                onChange={function (unitId) { setSelectedUnitId(unitId || ""); }}
+                options={units.map(function (u) { return { value: String(u.id), label: u.name }; })}
+                placeholder="Cari unit yang sudah ada..."
+                emptyLabel={units.length === 0 ? "Belum ada unit terdaftar" : null}
+              />
               <input
                 className="field-input"
                 value={newUnitName}
                 onChange={function (e) { setNewUnitName(e.target.value); }}
                 placeholder="Atau ketik nomor unit baru, misal HD-07"
+                style={{ marginTop: 8 }}
               />
               <div className="field-hint">Pilih salah satu: dari daftar di atas, atau ketik nomor unit baru kalau belum terdaftar.</div>
             </div>
@@ -176,4 +173,5 @@ export default function Register() {
       <div className="app-footer">designed by Najib.dev</div>
     </div>
   );
-}
+    }
+                
