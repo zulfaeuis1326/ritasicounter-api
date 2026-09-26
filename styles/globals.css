@@ -211,7 +211,7 @@ select:focus, input:focus {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  width: max(100%, min(320px, calc(100vw - 48px)));
+  right: 0;
   z-index: 50;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -598,7 +598,7 @@ a { color: var(--accent); }
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 380px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -1088,6 +1088,61 @@ a { color: var(--accent); }
   white-space: nowrap;
 }
 .rekap-export-btn { margin-left: auto; white-space: nowrap; }
+.rekap-share-btn { white-space: nowrap; background: #25D366; }
+.rekap-share-btn:hover:not(:disabled) { opacity: 0.9; }
+
+.report-hour-banner {
+  background: var(--ok-soft);
+  border: 1px solid var(--ok);
+  color: var(--ok);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.report-hour-setting {
+  margin-bottom: 12px;
+}
+.report-hour-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.report-hour-toggle:hover { color: var(--accent); }
+.report-hour-panel {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--surface-alt);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.report-hour-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+.report-hour-chip {
+  padding: 7px 0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+.report-hour-chip.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+}
 
 .btn-primary {
   background: var(--accent);
