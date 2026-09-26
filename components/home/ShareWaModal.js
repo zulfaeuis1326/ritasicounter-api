@@ -18,7 +18,8 @@ export default function ShareWaModal({ open, onClose, title, subtitle, hours, bu
     const init = {};
     (hours || []).forEach(function (h) { init[h.jam] = h.total > 0; });
     setChecked(init);
-  }, [open, hours]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open) return null;
 
