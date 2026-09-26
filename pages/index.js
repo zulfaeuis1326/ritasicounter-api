@@ -37,6 +37,7 @@ function HomeContent() {
   const [loadingClick, setLoadingClick] = useState(false);
   const [newUnitName, setNewUnitName] = useState("");
   const [showAllUnits, setShowAllUnits] = useState(false);
+  const [reportHours, setReportHours] = useState([7, 12, 19]);
 
   // Layar setup unit operator
   const [setupUnits, setSetupUnits] = useState([]);
@@ -147,6 +148,10 @@ function HomeContent() {
     if (canMonitorAll) {
       loadPastShifts();
       loadFleets();
+      fetch("/api/settings")
+        .then(function (res) { return res.json(); })
+        .then(function (d) { if (d && Array.isArray(d.reportHours)) setReportHours(d.reportHours); })
+        .catch(function () {});
     }
     loadRecap();
     loadHistory();
@@ -156,6 +161,22 @@ function HomeContent() {
     }, 2500);
     return function () { clearInterval(poll); };
   }, [authUser, needsUnitSetup, isAdmin, canMonitorAll, loadUnits, loadRecap, loadPastShifts, loadHistory, loadFleets]);
+
+  async function handleSaveReportHours(hours) {
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportHours: hours }),
+      });
+      const d = await res.json();
+      if (!res.ok) { toast(d.error || "Gagal simpan setting", "error"); return; }
+      setReportHours(d.reportHours);
+      toast("Jam laporan disimpan.");
+    } catch (err) {
+      toast("Gagal simpan (koneksi/server bermasalah)", "error");
+    }
+  }
 
   // Auto-perbaiki selectedUnit kalau nyasar/dihapus (khusus admin)
   useEffect(function () {
@@ -403,8 +424,11 @@ function HomeContent() {
                 showAllUnits={showAllUnits}
                 setShowAllUnits={setShowAllUnits}
                 canMonitorAll={canMonitorAll}
+                isAdmin={isAdmin}
                 recap={recap}
                 onExport={handleExport}
+                reportHours={reportHours}
+                onSaveReportHours={handleSaveReportHours}
               />
             )}
 
