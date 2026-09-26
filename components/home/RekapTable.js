@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ShareWaModal from "./ShareWaModal";
 
 const MATERIALS = ["OB", "COAL", "SOIL", "SOLU", "MUD"];
 const ALL_HOURS = Array.from({ length: 24 }, function (_, i) { return i; });
@@ -18,24 +19,20 @@ function WhatsappIcon() {
   );
 }
 
-function buildWaMessage(units, shift, currentHour) {
-  const active = units.filter(function (u) { return u.total > 0; });
-  const lines = [];
-  lines.push("*LAPORAN RITASI*");
-  if (shift) lines.push(shift.label);
-  lines.push("Jam: " + String(currentHour).padStart(2, "0") + ":00");
-  lines.push("");
-  if (active.length === 0) {
-    lines.push("Belum ada ritasi tercatat.");
-  } else {
-    active.forEach(function (u) {
-      lines.push("- " + u.name + " (" + (u.fleet_name || "-") + "): " + u.total + " rit");
+function buildHourOptions(recap) {
+  if (!recap || !recap.hours) return [];
+  return recap.hours.map(function (jam, i) {
+    const total = recap.grandHourlyTotals ? recap.grandHourlyTotals[i] : 0;
+    const materials = {};
+    (recap.units || []).forEach(function (u) {
+      const h = u.hourly[i];
+      if (!h) return;
+      Object.entries(h.materials || {}).forEach(function (entry) {
+        materials[entry[0]] = (materials[entry[0]] || 0) + entry[1];
+      });
     });
-  }
-  const grandTotal = active.reduce(function (s, u) { return s + u.total; }, 0);
-  lines.push("");
-  lines.push("Total keseluruhan: " + grandTotal + " rit");
-  return lines.join("\n");
+    return { jam, total, materials };
+  });
 }
 
 export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnits, canMonitorAll, isAdmin, recap, onExport, reportHours, onSaveReportHours }) {
@@ -59,11 +56,7 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
 
   const currentHour = recap ? recap.currentHour : null;
   const isReportHour = currentHour !== null && (reportHours || []).includes(currentHour);
-
-  function handleShareWa() {
-    const text = buildWaMessage(allRecapUnits, recap ? recap.shift : null, currentHour);
-    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
-  }
+  const [shareOpen, setShareOpen] = useState(false);
 
   function toggleDraftHour(h) {
     setDraftHours(function (prev) {
@@ -96,7 +89,7 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
           />
           Hanya ada ritasi
         </label>
-        <button className="btn btn-primary rekap-share-btn" onClick={handleShareWa} disabled={!recap || !recap.shift}>
+        <button className="btn btn-primary rekap-share-btn" onClick={function () { setShareOpen(true); }} disabled={!recap || !recap.shift}>
           <WhatsappIcon /> Share ke WA
         </button>
         {canMonitorAll && (
@@ -165,6 +158,63 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
           </tbody>
         </table>
       </div>
+
+      <ShareWaModal
+        open={shareOpen}
+        onClose={function () { setShareOpen(false); }}
+        title="Share Laporan Ritasi"
+        subtitle={recap && recap.shift ? recap.shift.label : ""}
+        hours={buildHourOptions(recap)}
+        buildMessage={function (selectedJams) {
+          const hourIdx = (recap.hours || []).reduce(function (acc, jam, i) {
+            if (selectedJams.includes(jam)) acc.push(i);
+            return acc;
+          }, []);
+          const rows = (recap.units || []).map(function (u) {
+            const mat = {};
+            let total = 0;
+            hourIdx.forEach(function (i) {
+              const h = u.hourly[i];
+              if (!h) return;
+              total += h.total;
+              Object.entries(h.materials || {}).forEach(function (entry) {
+                mat[entry[0]] = (mat[entry[0]] || 0) + entry[1];
+              });
+            });
+            return { name: u.name, fleet_name: u.fleet_name, pit_name: u.pit_name, total, mat };
+          }).filter(function (r) { return r.total > 0; });
+
+          const grandMat = {};
+          let grandTotal = 0;
+          rows.forEach(function (r) {
+            grandTotal += r.total;
+            Object.entries(r.mat).forEach(function (entry) {
+              grandMat[entry[0]] = (grandMat[entry[0]] || 0) + entry[1];
+            });
+          });
+
+          const jamRange = selectedJams.slice().sort(function (a, b) { return a - b; })
+            .map(function (j) { return String(j).padStart(2, "0") + ":00"; }).join(", ");
+
+          const lines = [
+            "*LAPORAN RITASI*",
+            recap && recap.shift ? recap.shift.label : null,
+            "Jam: " + jamRange,
+            "",
+            "Per unit:",
+            ...(rows.length === 0 ? ["Belum ada ritasi di jam terpilih."] : rows.map(function (r) {
+              const matStr = MATERIALS.filter(function (m) { return r.mat[m]; }).map(function (m) { return m + " " + r.mat[m]; }).join(", ");
+              return "- " + r.name + " (" + (r.fleet_name || "-") + " / " + (r.pit_name || "-") + "): " + r.total + " rit" + (matStr ? " (" + matStr + ")" : "");
+            })),
+            "",
+            "Total material:",
+            ...MATERIALS.filter(function (m) { return grandMat[m]; }).map(function (m) { return "- " + m + ": " + grandMat[m] + " rit"; }),
+            "",
+            "Total keseluruhan: " + grandTotal + " rit",
+          ].filter(function (l) { return l !== null; });
+          return lines.join("\n");
+        }}
+      />
     </section>
   );
 }
