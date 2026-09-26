@@ -68,6 +68,63 @@ export default function AdminOperators() {
     }
   }
 
+  async function handleApprove(userId, username) {
+    if (!confirm(`Approve akun "${username}"? Dia akan bisa login setelah ini.`)) return;
+    try {
+      const res = await fetch("/api/admin/operators", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "approve" }),
+      });
+      if (res.ok) {
+        await loadList();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal approve: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal approve (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleReject(userId, username) {
+    if (!confirm(`Tolak pendaftaran "${username}"? Akun ini akan dihapus permanen.`)) return;
+    try {
+      const res = await fetch("/api/admin/operators", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "reject" }),
+      });
+      if (res.ok) {
+        await loadList();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal tolak: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal tolak (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleRevoke(userId, username) {
+    if (!confirm(`Paksa logout "${username}" dari semua perangkat? Dia harus login ulang.`)) return;
+    try {
+      const res = await fetch("/api/admin/operators", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "revoke_sessions" }),
+      });
+      if (res.ok) {
+        alert(`"${username}" berhasil di-paksa logout.`);
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal paksa logout: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal paksa logout (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
   async function handleSetRole(userId, username, newRole) {
     if (!confirm(`Ubah role "${username}" jadi ${ROLE_LABEL[newRole]}?`)) return;
     try {
@@ -203,12 +260,28 @@ export default function AdminOperators() {
           <div key={u.id} className="history-row">
             <div className="history-info">
               <b>{u.username}</b> ({ROLE_LABEL[u.role] || u.role})
+              {u.status === "pending" && (
+                <span className="badge-pending" style={{ marginLeft: 6, color: "var(--amber, #d97706)", fontWeight: 700, fontSize: 11 }}>
+                  MENUNGGU APPROVAL
+                </span>
+              )}
               <div className="hint">
                 {u.role === "operator"
                   ? (u.unit_name ? `Unit: ${u.unit_name}` : "Belum pilih unit")
                   : "Tidak terkunci ke unit manapun"}
               </div>
             </div>
+
+            {u.status === "pending" ? (
+              <div className="akun-row-actions">
+                <button className="btn btn-secondary" style={{ width: "auto", padding: "0 14px" }} onClick={() => handleApprove(u.id, u.username)}>
+                  Approve
+                </button>
+                <button className="btn-mini-danger" onClick={() => handleReject(u.id, u.username)}>
+                  Tolak
+                </button>
+              </div>
+            ) : (
             <div className="akun-row-actions">
               {u.role === "operator" && (
                 <div className="akun-op-actions">
@@ -226,6 +299,11 @@ export default function AdminOperators() {
                     {u.unit_id && (
                       <button className="btn-mini-danger" onClick={() => handleReset(u.id, u.username)}>
                         Reset Unit
+                      </button>
+                    )}
+                    {u.id !== authUser.id && (
+                      <button className="btn-mini-danger" onClick={() => handleRevoke(u.id, u.username)}>
+                        Paksa Logout
                       </button>
                     )}
                     {u.id !== authUser.id && (
@@ -256,6 +334,9 @@ export default function AdminOperators() {
                         ))}
                     </select>
                   )}
+                  <button className="btn-mini-danger" onClick={() => handleRevoke(u.id, u.username)}>
+                    Paksa Logout
+                  </button>
                   {/* Admin biasa cuma boleh hapus akun pengawas/operator; superadmin bebas semua */}
                   {(authUser.role === "superadmin" || (u.role !== "admin" && u.role !== "superadmin")) && (
                     <button className="btn-mini-danger" onClick={() => handleDelete(u.id, u.username)}>
@@ -265,6 +346,7 @@ export default function AdminOperators() {
                 </>
               )}
             </div>
+            )}
           </div>
         ))}
         {list.length === 0 && !error && <div className="hint">Belum ada akun.</div>}
