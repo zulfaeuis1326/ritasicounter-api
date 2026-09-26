@@ -114,7 +114,9 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
   return (
     <header className="topbar">
       <div className="topbar-logo">
-        <span className="topbar-mark"><LogoMark /></span>
+        <span className="topbar-mark">
+          <img src="/logo.png" alt="Logo" className="topbar-mark-img" onError={function (e) { e.target.style.display = "none"; }} />
+        </span>
         <span className="topbar-logo-text">RitasiCounter</span>
       </div>
       <button className="topbar-collapse-btn" onClick={handleToggleSidebar} title={collapsed ? "Buka sidebar" : "Ciutkan sidebar"} aria-label="Toggle sidebar">
