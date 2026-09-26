@@ -770,12 +770,6 @@ a { color: var(--accent); }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  overflow: hidden;
-}
-.topbar-mark-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 .topbar-nav {
   display: flex;
