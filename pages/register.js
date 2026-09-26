@@ -33,6 +33,7 @@ export default function Register() {
   const [selectedUnitId, setSelectedUnitId] = useState("");
   const [newUnitName, setNewUnitName] = useState("");
   const [error, setError] = useState("");
+  const [pendingMessage, setPendingMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(function () {
@@ -71,6 +72,13 @@ export default function Register() {
         setError(data.error || "Gagal daftar");
         return;
       }
+      // status 202 = akun dibuat tapi masih nunggu approval admin -- res.ok tetap true
+      // untuk semua status 2xx, jadi HARUS dicek eksplisit lewat field pending, bukan
+      // cuma res.ok, atau nanti keliatan seperti berhasil login padahal sesinya belum ada.
+      if (data.pending) {
+        setPendingMessage(data.message || "Akun kamu sedang menunggu persetujuan admin.");
+        return;
+      }
       window.location.href = "/";
     } catch (err) {
       setError(err.message);
@@ -86,6 +94,13 @@ export default function Register() {
         <div className="auth-title">Daftar Akun</div>
         <div className="auth-subtitle">Buat akun baru untuk mulai pakai RitasiCounter</div>
 
+        {pendingMessage ? (
+          <div className="field-group" style={{ textAlign: "center" }}>
+            <div className="hint" style={{ color: "var(--ok)", fontSize: 15, lineHeight: 1.5 }}>
+              ✅ {pendingMessage}
+            </div>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit}>
           <div className="field-group">
             <label className="field-label" htmlFor="username">Username</label>
@@ -165,6 +180,7 @@ export default function Register() {
             {loading ? "Memproses..." : "Daftar"}
           </button>
         </form>
+        )}
 
         <div className="auth-switch">
           Sudah punya akun? <a href="/login">Login di sini</a>
@@ -173,5 +189,4 @@ export default function Register() {
       <div className="app-footer">designed by Najib.dev</div>
     </div>
   );
-    }
-                
+}
