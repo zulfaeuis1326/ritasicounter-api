@@ -65,6 +65,6 @@ export default async function handler(req, res) {
     return res.status(405).end();
   } catch (err) {
     console.error("Error di /api/ritasi:", err);
-    return res.status(500).json({ error: err.message, stack: err.stack });
+    return res.status(500).json({ error: err.message });
   }
 }
