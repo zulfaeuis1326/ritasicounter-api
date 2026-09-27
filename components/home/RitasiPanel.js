@@ -10,6 +10,14 @@ function WhatsappIcon() {
   );
 }
 
+function formatJamCell(h) {
+  if (!h || h.total === 0) return "-";
+  const entries = Object.entries(h.materials || {});
+  if (entries.length === 0) return "-";
+  if (entries.length === 1) return entries[0][0] + " x" + entries[0][1];
+  return entries.map(function (e) { return e[0] + ":" + e[1]; }).join(", ");
+}
+
 const MATERIALS = ["OB", "COAL", "SOIL", "SOLU", "MUD"];
 
 export default function RitasiPanel({
@@ -120,27 +128,23 @@ export default function RitasiPanel({
         </button>
       )}
 
-      {selectedUnitRecap && selectedUnitRecap.hourly && selectedUnitRecap.hourly.some(function (h) { return h.total > 0; }) && (
-        <div className="unit-hourly-wrap">
-          <div className="section-title" style={{ marginTop: 16, marginBottom: 8 }}>Rincian per Jam - {authUser.unit_name}</div>
+      {selectedUnitRecap && selectedUnitRecap.hourly && selectedUnitRecap.hourly.length > 0 && (
+        <>
+          <div className="field-label" style={{ marginTop: 16, marginBottom: 6 }}>
+            Rincian Per Jam (Real-Time)
+          </div>
           <div className="table-scroll">
             <table className="list-table">
               <thead>
-                <tr>
-                  <th>Jam</th>
-                  {MATERIALS.map(function (m) { return <th key={m}>{m}</th>; })}
-                  <th>Total</th>
-                </tr>
+                <tr><th>Jam</th><th>Material</th><th>Total</th></tr>
               </thead>
               <tbody>
-                {selectedUnitRecap.hourly.filter(function (h) { return h.total > 0; }).map(function (h) {
-                  const isNow = recap && h.jam === recap.currentHour;
+                {selectedUnitRecap.hourly.map(function (h) {
+                  const isCurrent = recap && h.jam === recap.currentHour;
                   return (
-                    <tr key={h.jam} className={isNow ? "row-selected" : ""}>
-                      <td style={{ fontWeight: 700 }}>{String(h.jam).padStart(2, "0")}:00</td>
-                      {MATERIALS.map(function (m) {
-                        return <td key={m}>{(h.materials && h.materials[m]) || 0}</td>;
-                      })}
+                    <tr key={h.jam} className={isCurrent ? "row-selected" : ""}>
+                      <td>{String(h.jam).padStart(2, "0")}:00</td>
+                      <td>{formatJamCell(h)}</td>
                       <td style={{ fontWeight: 700 }}>{h.total}</td>
                     </tr>
                   );
@@ -148,7 +152,7 @@ export default function RitasiPanel({
               </tbody>
             </table>
           </div>
-        </div>
+        </>
       )}
 
       <ShareWaModal
@@ -190,4 +194,4 @@ export default function RitasiPanel({
       />
     </section>
   );
-}
+              }
