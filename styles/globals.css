@@ -496,6 +496,23 @@ thead th.current-hour {
   margin-left: 10px;
 }
 
+.btn-mini-link {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-block;
+}
+
 .table-scroll {
   overflow-x: auto;
   width: 100%;
@@ -769,11 +786,10 @@ a { color: var(--accent); }
   white-space: nowrap;
 }
 .topbar-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-contrast);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -783,7 +799,7 @@ a { color: var(--accent); }
 .topbar-mark-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 .topbar-nav {
   display: flex;
