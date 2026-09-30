@@ -1253,3 +1253,10 @@ a { color: var(--accent); }
 }
 .toast-error { background: var(--danger); color: var(--accent-contrast); }
 .toast-info { background: var(--text); }
+
+.unit-hourly-table th:nth-child(1), .unit-hourly-table td:nth-child(1) { white-space: nowrap; width: 1%; }
+.unit-hourly-table th:nth-child(3), .unit-hourly-table td:nth-child(3) { white-space: nowrap; width: 1%; text-align: right; }
+.unit-hourly-table td:nth-child(2) { white-space: normal; word-break: break-word; }
+@media (min-width: 900px) {
+  .unit-hourly-table td:nth-child(2) { white-space: nowrap; }
+}
