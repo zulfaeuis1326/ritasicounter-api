@@ -107,14 +107,6 @@ export default function RitasiPanel({
         {loadingClick ? "..." : "+ RITASI"}
       </button>
 
-      <div className="stat-row">
-        <span>Ritasi jam ini ({recap ? recap.currentHour : "-"})</span>
-        <b>{currentHourData ? currentHourData.total : 0}</b>
-      </div>
-      <div className="stat-row">
-        <span>Total shift ini</span>
-        <b>{selectedUnitRecap ? selectedUnitRecap.total : 0}</b>
-      </div>
       {!material && <div className="hint">Pilih material dulu sebelum klik ritasi.</div>}
 
       {!isAdmin && (
@@ -134,7 +126,7 @@ export default function RitasiPanel({
             Rincian Per Jam (Real-Time)
           </div>
           <div className="table-scroll">
-            <table className="list-table">
+            <table className="list-table unit-hourly-table">
               <thead>
                 <tr><th>Jam</th><th>Material</th><th>Total</th></tr>
               </thead>
@@ -154,6 +146,15 @@ export default function RitasiPanel({
           </div>
         </>
       )}
+
+      <div className="stat-row" style={{ marginTop: 16 }}>
+        <span>Ritasi jam ini ({recap ? recap.currentHour : "-"})</span>
+        <b>{currentHourData ? currentHourData.total : 0}</b>
+      </div>
+      <div className="stat-row">
+        <span>Total shift ini</span>
+        <b>{selectedUnitRecap ? selectedUnitRecap.total : 0}</b>
+      </div>
 
       <ShareWaModal
         open={shareOpen}
@@ -194,4 +195,4 @@ export default function RitasiPanel({
       />
     </section>
   );
-              }
+            }
