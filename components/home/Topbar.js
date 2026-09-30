@@ -113,34 +113,36 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
 
   return (
     <header className="topbar">
-      <div className="topbar-logo">
-        <span className="topbar-mark">
-          <img src="/logo.png" alt="Logo" className="topbar-mark-img" onError={function (e) { e.target.style.display = "none"; }} />
-        </span>
-        <span className="topbar-logo-text">RitasiCounter</span>
+      <div className="topbar-toprow">
+        <div className="topbar-logo">
+          <span className="topbar-mark">
+            <img src="/logo.png" alt="Logo" className="topbar-mark-img" onError={function (e) { e.target.style.display = "none"; }} />
+          </span>
+          <span className="topbar-logo-text">RitasiCounter</span>
+        </div>
+        <button className="topbar-collapse-btn" onClick={handleToggleSidebar} title={collapsed ? "Buka sidebar" : "Ciutkan sidebar"} aria-label="Toggle sidebar">
+          <CollapseIcon collapsed={collapsed} />
+        </button>
+        <div className="topbar-spacer" />
+        <div className="topbar-footer">
+          <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
+          {theme !== null && (
+            <button className="topbar-iconbtn" onClick={toggleTheme} title="Ganti tema" aria-label="Ganti tema">
+              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+            </button>
+          )}
+          <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
+            <LogoutIcon />
+          </button>
+          <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
+        </div>
       </div>
-      <button className="topbar-collapse-btn" onClick={handleToggleSidebar} title={collapsed ? "Buka sidebar" : "Ciutkan sidebar"} aria-label="Toggle sidebar">
-        <CollapseIcon collapsed={collapsed} />
-      </button>
       <nav className="topbar-nav">
         <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
         <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Kelola Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
-      <div className="topbar-spacer" />
-      <div className="topbar-footer">
-        <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
-        {theme !== null && (
-          <button className="topbar-iconbtn" onClick={toggleTheme} title="Ganti tema" aria-label="Ganti tema">
-            {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-          </button>
-        )}
-        <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
-          <LogoutIcon />
-        </button>
-        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
-      </div>
     </header>
   );
 }
