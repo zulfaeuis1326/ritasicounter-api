@@ -45,6 +45,7 @@ function HomeContent() {
   const [newSetupUnitName, setNewSetupUnitName] = useState("");
 
   const isAdmin = !!authUser && atLeast(authUser.role, "admin");
+  const isSuperadmin = !!authUser && authUser.role === "superadmin";
   const isOperator = !!authUser && authUser.role === "operator";
   const canMonitorAll = !!authUser && atLeast(authUser.role, "pengawas");
   const canClickRitasi = !!authUser && (isOperator || isAdmin);
@@ -134,6 +135,23 @@ function HomeContent() {
       if (res.ok) setPastShifts(await res.json());
     } catch (err) { /* diamkan */ }
   }, []);
+
+  async function handleDeleteShift(id, label) {
+    if (!confirm(`Hapus history shift "${label}"? Semua data ritasi di shift ini bakal ikut kehapus permanen, gak bisa dibalikin.`)) return;
+    try {
+      const res = await fetch("/api/shift/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shiftId: id }),
+      });
+      const d = await res.json();
+      if (!res.ok) { toast(d.error || "Gagal hapus shift", "error"); return; }
+      toast("Shift dihapus.");
+      loadPastShifts();
+    } catch (err) {
+      toast("Gagal hapus (koneksi/server bermasalah)", "error");
+    }
+  }
 
   // ===== Setup unit screen loader =====
   useEffect(function () {
@@ -464,9 +482,16 @@ function HomeContent() {
                     <div className="field-label" style={{ marginTop: 14, marginBottom: 6 }}>Riwayat Shift</div>
                     {pastShifts.map(function (s) {
                       return (
-                        <div key={s.id} className="stat-row">
+                        <div key={s.id} className="history-row">
                           <span>{s.label}</span>
-                          <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer">Download</a>
+                          <div className="akun-row-actions">
+                            <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer" className="btn-mini-link">Download</a>
+                            {isAdmin && (
+                              <button className="btn-mini-danger" onClick={function () { handleDeleteShift(s.id, s.label); }}>
+                                Hapus
+                              </button>
+                            )}
+                          </div>
                         </div>
                       );
                     })}
@@ -478,26 +503,28 @@ function HomeContent() {
             <section className="card">
               <h2 className="sec-title-icon">Riwayat & Revisi Ritasi</h2>
               <div className="hint" style={{ marginBottom: 8 }}>
-                Salah pencet material? Hapus entri yang salah di sini.
+                Salah pencet material? Hapus entri yang salah di sini. ({history.length} entri)
               </div>
               {history.length === 0 && <div className="hint">Belum ada ritasi tercatat.</div>}
-              {history.map(function (h) {
-                return (
-                  <div key={h.id} className="history-row">
-                    <div className="history-info">
-                      <b>{h.unit_name}</b> - {h.material} - jam {String(h.jam).padStart(2, "0")}:00
-                      <div className="hint">
-                        {h.operator_name || "(tanpa nama)"} - {new Date(h.clicked_at).toLocaleTimeString("id-ID")}
+              {history.length > 0 && (
+                <div className="history-list-scroll">
+                  {history.map(function (h) {
+                    return (
+                      <div key={h.id} className="history-row history-row-compact">
+                        <div className="history-info">
+                          <b>{h.unit_name}</b> · {h.material} · jam {String(h.jam).padStart(2, "0")}:00
+                          <span className="history-meta"> — {h.operator_name || "(tanpa nama)"}, {new Date(h.clicked_at).toLocaleTimeString("id-ID")}</span>
+                        </div>
+                        {(isAdmin || h.operator_id === authUser.id) && (
+                          <button className="btn-mini-danger" onClick={function () { handleDeleteHistory(h.id); }}>
+                            Hapus
+                          </button>
+                        )}
                       </div>
-                    </div>
-                    {(isAdmin || h.operator_id === authUser.id) && (
-                      <button className="btn-mini-danger" onClick={function () { handleDeleteHistory(h.id); }}>
-                        Hapus
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </section>
           </div>
         </div>
