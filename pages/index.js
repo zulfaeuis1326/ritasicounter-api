@@ -9,6 +9,7 @@ import RitasiPanel from "../components/home/RitasiPanel";
 import RekapTable from "../components/home/RekapTable";
 import JamManualModal from "../components/home/JamManualModal";
 import UnitSetupScreen from "../components/home/UnitSetupScreen";
+import ShiftRowMenu from "../components/home/ShiftRowMenu";
 
 export default function Home() {
   return (
@@ -484,14 +485,7 @@ function HomeContent() {
                       return (
                         <div key={s.id} className="history-row">
                           <span>{s.label}</span>
-                          <div className="akun-row-actions">
-                            <a href={"/api/shift/export?shiftId=" + s.id} target="_blank" rel="noreferrer" className="btn-mini-link">Download</a>
-                            {isAdmin && (
-                              <button className="btn-mini-danger" onClick={function () { handleDeleteShift(s.id, s.label); }}>
-                                Hapus
-                              </button>
-                            )}
-                          </div>
+                          <ShiftRowMenu shiftId={s.id} isAdmin={isAdmin} onDelete={function () { handleDeleteShift(s.id, s.label); }} />
                         </div>
                       );
                     })}
