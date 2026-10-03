@@ -74,6 +74,13 @@ function UsersIcon() {
     </svg>
   );
 }
+function TvIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2" /><path d="M8 21h8M12 19v2" />
+    </svg>
+  );
+}
 
 const SIDEBAR_KEY = "rc_sidebar_collapsed";
 
@@ -113,36 +120,33 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
 
   return (
     <header className="topbar">
-      <div className="topbar-toprow">
-        <div className="topbar-logo">
-          <span className="topbar-mark">
-            <img src="/logo.png" alt="Logo" className="topbar-mark-img" onError={function (e) { e.target.style.display = "none"; }} />
-          </span>
-          <span className="topbar-logo-text">RitasiCounter</span>
-        </div>
-        <button className="topbar-collapse-btn" onClick={handleToggleSidebar} title={collapsed ? "Buka sidebar" : "Ciutkan sidebar"} aria-label="Toggle sidebar">
-          <CollapseIcon collapsed={collapsed} />
-        </button>
-        <div className="topbar-spacer" />
-        <div className="topbar-footer">
-          <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
-          {theme !== null && (
-            <button className="topbar-iconbtn" onClick={toggleTheme} title="Ganti tema" aria-label="Ganti tema">
-              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-            </button>
-          )}
-          <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
-            <LogoutIcon />
-          </button>
-          <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
-        </div>
+      <div className="topbar-logo">
+        <span className="topbar-mark"><LogoMark /></span>
+        <span className="topbar-logo-text">RitasiCounter</span>
       </div>
+      <button className="topbar-collapse-btn" onClick={handleToggleSidebar} title={collapsed ? "Buka sidebar" : "Ciutkan sidebar"} aria-label="Toggle sidebar">
+        <CollapseIcon collapsed={collapsed} />
+      </button>
       <nav className="topbar-nav">
         <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
         <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="display" href="/display" label="Layar TV" icon={<TvIcon />} show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Kelola Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
+      <div className="topbar-spacer" />
+      <div className="topbar-footer">
+        <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
+        {theme !== null && (
+          <button className="topbar-iconbtn" onClick={toggleTheme} title="Ganti tema" aria-label="Ganti tema">
+            {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+          </button>
+        )}
+        <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
+          <LogoutIcon />
+        </button>
+        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
+      </div>
     </header>
   );
 }
