@@ -1,72 +1,49 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { atLeast, ALL_ROLES, ROLE_LABEL } from "../../lib/roles";
+import { useAuthCheck } from "../../hooks/useAuthCheck";
 import Topbar from "../../components/home/Topbar";
 
 export default function AdminOperators() {
   const router = useRouter();
-  const [authUser, setAuthUser] = useState(undefined);
+  const { authUser, authError, retry: retryAuth } = useAuthCheck(router, {
+    minRole: (role) => atLeast(role, "admin"),
+    redirectIfBelow: "/",
+  });
   const [list, setList] = useState([]);
+  const [units, setUnits] = useState([]);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetch("/api/auth/me", { cache: "no-store" })
-      .then((res) => res.json())
-      .then((d) => {
-        if (!d.user) router.push("/login");
-        else if (!atLeast(d.user.role, "admin")) router.push("/");
-        else setAuthUser(d.user);
-      })
-      .catch(() => router.push("/login"));
-  }, [router]);
 
   const loadList = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/operators");
+      const res = await fetch("/api/admin/operators", { cache: "no-store" });
+      const data = await res.json();
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setError(d.error || `Error ${res.status}`);
+        setError(data.error || "Gagal memuat daftar akun");
         return;
       }
-      setList(await res.json());
+      setList(data);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Gagal memuat daftar akun");
     }
   }, []);
 
-  const [units, setUnits] = useState([]);
   const loadUnits = useCallback(async () => {
     try {
-      const res = await fetch("/api/units");
-      if (res.ok) setUnits(await res.json());
+      const res = await fetch("/api/units", { cache: "no-store" });
+      const data = await res.json();
+      setUnits(Array.isArray(data) ? data : []);
     } catch (err) {
-      // gagal diam-diam, dropdown assign unit cukup kosong kalau ini gagal
+      // Gagal load unit bukan fatal -- dropdown assign unit cuma kosong, sisa halaman tetap jalan.
     }
   }, []);
 
   useEffect(() => {
-    if (authUser) { loadList(); loadUnits(); }
+    if (!authUser) return;
+    loadList();
+    loadUnits();
   }, [authUser, loadList, loadUnits]);
-
-  async function handleReset(userId, username) {
-    if (!confirm(`Reset unit untuk "${username}"? Dia akan diminta memilih unit lagi saat login berikutnya.`)) return;
-    try {
-      const res = await fetch("/api/admin/operators", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action: "reset_unit" }),
-      });
-      if (res.ok) {
-        await loadList();
-      } else {
-        const d = await res.json().catch(() => ({}));
-        alert(`Gagal reset: ${d.error || res.status}`);
-      }
-    } catch (err) {
-      alert(`Gagal reset (koneksi/server bermasalah): ${err.message}`);
-    }
-  }
 
   async function handleApprove(userId, username) {
     if (!confirm(`Approve akun "${username}"? Dia akan bisa login setelah ini.`)) return;
@@ -126,7 +103,7 @@ export default function AdminOperators() {
   }
 
   async function handleSetRole(userId, username, newRole) {
-    if (!confirm(`Ubah role "${username}" jadi ${ROLE_LABEL[newRole]}?`)) return;
+    if (!confirm(`Ubah role "${username}" jadi ${ROLE_LABEL[newRole] || newRole}?`)) return;
     try {
       const res = await fetch("/api/admin/operators", {
         method: "POST",
@@ -149,21 +126,40 @@ export default function AdminOperators() {
       const res = await fetch("/api/admin/operators", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action: "set_unit", unitId: unitId || null }),
+        body: JSON.stringify({ userId, action: "set_unit", unitId }),
       });
       if (res.ok) {
         await loadList();
       } else {
         const d = await res.json().catch(() => ({}));
-        alert(`Gagal atur unit "${username}": ${d.error || res.status}`);
+        alert(`Gagal assign unit: ${d.error || res.status}`);
       }
     } catch (err) {
-      alert(`Gagal atur unit (koneksi/server bermasalah): ${err.message}`);
+      alert(`Gagal assign unit (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleReset(userId, username) {
+    if (!confirm(`Reset unit "${username}"? Dia harus pilih unit lagi pas login berikutnya.`)) return;
+    try {
+      const res = await fetch("/api/admin/operators", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "reset_unit" }),
+      });
+      if (res.ok) {
+        await loadList();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal reset unit: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal reset unit (koneksi/server bermasalah): ${err.message}`);
     }
   }
 
   async function handleDelete(userId, username) {
-    if (!confirm(`Hapus akun "${username}"? Login-nya akan hilang permanen (riwayat ritasi yang pernah dia input TETAP ada, cuma tidak lagi tercatat atas nama dia).`)) return;
+    if (!confirm(`Hapus akun "${username}" secara permanen? Ini tidak bisa dibatalkan.`)) return;
     try {
       const res = await fetch("/api/admin/operators", {
         method: "POST",
@@ -181,50 +177,25 @@ export default function AdminOperators() {
     }
   }
 
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState(null);
-  const [deduping, setDeduping] = useState(false);
-  const [dedupeResult, setDedupeResult] = useState(null);
-
-  async function handleImportRoster() {
-    if (!confirm("Import 42 PC + 124 HD dari data roster ke database? Aman diulang (yang udah ada dilewati, gak dobel).")) return;
-    setImporting(true);
-    setImportResult(null);
-    try {
-      const res = await fetch("/api/admin/import-roster", { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        setImportResult(data);
-      } else {
-        alert(`Gagal import: ${data.error || res.status}`);
-      }
-    } catch (err) {
-      alert(`Gagal import (koneksi/server bermasalah): ${err.message}`);
-    } finally {
-      setImporting(false);
-    }
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
   }
 
-  async function handleDedupe() {
-    if (!confirm("Gabungin unit/PC yang namanya sama (dobel karena beda kapitalisasi/spasi)? Data fleet & PIT yang udah keisi otomatis dipertahankan.")) return;
-    setDeduping(true);
-    setDedupeResult(null);
-    try {
-      const res = await fetch("/api/admin/dedupe-units", { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        setDedupeResult(data);
-      } else {
-        alert(`Gagal bersihin: ${data.error || res.status}`);
-      }
-    } catch (err) {
-      alert(`Gagal bersihin (koneksi/server bermasalah): ${err.message}`);
-    } finally {
-      setDeduping(false);
-    }
+  if (authError) {
+    return (
+      <div className="container">
+        <div className="card">
+          <div className="hint" style={{ color: "var(--danger)" }}>{authError}</div>
+          <button className="btn btn-secondary" style={{ width: "auto", padding: "0 16px", marginTop: 10 }} onClick={retryAuth}>
+            Coba lagi
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  if (authUser === undefined || authUser === null) {
+  if (!authUser) {
     return (
       <div className="container">
         <div className="card"><div className="hint">Memuat...</div></div>
@@ -232,29 +203,18 @@ export default function AdminOperators() {
     );
   }
 
-  // Admin biasa cuma boleh set role pengawas/operator; superadmin bebas semua role.
-  const assignableRoles = authUser.role === "superadmin" ? ALL_ROLES : ["pengawas", "operator"];
   const isSuperadmin = authUser.role === "superadmin";
-
   const isAdmin = atLeast(authUser.role, "admin");
   const canMonitorAll = atLeast(authUser.role, "pengawas");
-
-  async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/login";
-  }
+  const assignableRoles = ALL_ROLES;
 
   return (
     <div className="v4-page">
       <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="akun" />
 
-      <main className="container">
+      <div className="container">
+        {error && <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>{error}</div></div>}
 
-      {error && (
-        <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>Error: {error}</div></div>
-      )}
-
-      <div className="card">
         <div className="section-title">Daftar Akun</div>
         {list.map((u) => (
           <div key={u.id} className="history-row">
@@ -337,7 +297,6 @@ export default function AdminOperators() {
                   <button className="btn-mini-danger" onClick={() => handleRevoke(u.id, u.username)}>
                     Paksa Logout
                   </button>
-                  {/* Admin biasa cuma boleh hapus akun pengawas/operator; superadmin bebas semua */}
                   {(authUser.role === "superadmin" || (u.role !== "admin" && u.role !== "superadmin")) && (
                     <button className="btn-mini-danger" onClick={() => handleDelete(u.id, u.username)}>
                       Hapus Akun
@@ -351,46 +310,6 @@ export default function AdminOperators() {
         ))}
         {list.length === 0 && !error && <div className="hint">Belum ada akun.</div>}
       </div>
-
-      {authUser.role === "superadmin" && (
-        <div className="two-col-cards">
-          <div className="card">
-            <div className="section-title">Import Data Unit (PC &amp; HD)</div>
-            <div className="hint" style={{ marginBottom: 8 }}>
-              Import sekali jalan dari data roster (42 PC + 124 HD). Aman diklik berkali-kali —
-              unit yang sudah ada otomatis dilewati, tidak akan dobel.
-            </div>
-            <button className="btn btn-secondary" onClick={handleImportRoster} disabled={importing}>
-              {importing ? "Mengimport..." : "Import Sekarang"}
-            </button>
-            {importResult && (
-              <div className="hint" style={{ marginTop: 8 }}>
-                Fleet (PC): {importResult.fleets.created} baru ditambahkan, {importResult.fleets.skipped} sudah ada (dilewati).<br />
-                Unit (HD): {importResult.units.created} baru ditambahkan, {importResult.units.skipped} sudah ada (dilewati).
-              </div>
-            )}
-          </div>
-
-          <div className="card">
-            <div className="section-title">Bersihkan Unit Dobel</div>
-            <div className="hint" style={{ marginBottom: 8 }}>
-              Gabungin unit/PC yang namanya sama tapi kecatat dobel (beda kapitalisasi/spasi).
-              Data fleet &amp; PIT yang udah keisi otomatis dipertahankan, gak hilang.
-            </div>
-            <button className="btn btn-secondary" onClick={handleDedupe} disabled={deduping}>
-              {deduping ? "Membersihkan..." : "Bersihkan Sekarang"}
-            </button>
-            {dedupeResult && (
-              <div className="hint" style={{ marginTop: 8 }}>
-                {dedupeResult.fleetsMerged} PC digabung, {dedupeResult.unitsMerged} unit HD digabung.
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="app-footer">designed by Najib.dev</div>
-      </main>
     </div>
   );
 }
