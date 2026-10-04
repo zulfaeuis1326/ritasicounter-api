@@ -6,33 +6,37 @@
    nuansa stone/concrete hangat, bukan abu-abu-biru dingin khas template SaaS. */
 :root,
 [data-theme="light"] {
-  --bg: #f1efe6;
-  --surface: #fffdf8;
-  --surface-alt: #e8e3d4;
-  --border: #d9d2bd;
-  --text: #211f1a;
-  --text-muted: #6e6859;
-  --accent: #d9570f;
-  --accent-strong: #a8420c;
-  --danger: #c23b2d;
-  --ok: #3f7d4a;
+  --bg: #f4efe1;
+  --surface: #fffdf9;
+  --surface-alt: #ece2cb;
+  --border: #ddcfab;
+  --text: #241f15;
+  --text-muted: #7a7158;
+
+  --accent: #ef8a00;
+  --accent-strong: #c96b00;
+  --accent-2: #0f8b8d;
+  --accent-2-strong: #0a6668;
+  --accent-2-soft: rgba(15, 139, 141, 0.12);
+  --danger: #e2402b;
+  --ok: #2f9e52;
 
   --mat-ob: #8b6a4e;
   --mat-coal: #4a4e57;
   --mat-soil: #b98249;
   --mat-solu: #2f6fb0;
   --mat-mud: #6b6148;
-  --stripe-alt: #211f1a;
+  --stripe-alt: #241f15;
   --accent-contrast: #fffaf0;
-  --accent-gradient-end: #a8420c;
-  --accent-shadow: #7a300a;
-  --btn-disabled-bg: #cdc6b4;
-  --accent-soft: rgba(217, 87, 15, 0.12);
-  --accent-glow: rgba(217, 87, 15, 0.35);
-  --ok-soft: rgba(63, 125, 74, 0.10);
-  --danger-soft: rgba(194, 59, 45, 0.08);
-  --amber: #a8640a;
-  --amber-soft: rgba(168, 100, 10, 0.12);
+  --accent-gradient-end: #c96b00;
+  --accent-shadow: #8a4a00;
+  --btn-disabled-bg: #d6c9a8;
+  --accent-soft: rgba(239, 138, 0, 0.14);
+  --accent-glow: rgba(239, 138, 0, 0.4);
+  --ok-soft: rgba(47, 158, 82, 0.10);
+  --danger-soft: rgba(226, 64, 43, 0.08);
+  --amber: #b8780a;
+  --amber-soft: rgba(184, 120, 10, 0.12);
 
   --font-display: "Oswald", "Arial Narrow", sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
@@ -42,29 +46,33 @@
 /* Tema dark (industrial) — aktif kalau data-theme="dark" di <html>.
    Oranye hazard yang sama, cuma lebih terang/jenuh buat kontras di latar gelap. */
 [data-theme="dark"] {
-  --bg: #16150f;
-  --surface: #211f19;
-  --surface-alt: #2a2820;
-  --border: #3a3629;
-  --text: #f2efe2;
-  --text-muted: #a39d89;
-  --accent: #f5a623;
-  --accent-strong: #ff7a1a;
-  --danger: #e6584a;
-  --ok: #5aab6c;
+  --bg: #15130d;
+  --surface: #211e16;
+  --surface-alt: #2b271c;
+  --border: #3d3626;
+  --text: #f5f0e3;
+  --text-muted: #a89f89;
+
+  --accent: #ffb020;
+  --accent-strong: #ff8a1a;
+  --accent-2: #2dd4cf;
+  --accent-2-strong: #17b3ae;
+  --accent-2-soft: rgba(45, 212, 207, 0.16);
+  --danger: #ff5c48;
+  --ok: #4fcf78;
 
   --mat-ob: #8b6a4e;
   --mat-coal: #4a4e57;
   --mat-soil: #b98249;
   --mat-solu: #4a7fa5;
   --mat-mud: #6b6148;
-  --stripe-alt: #16150f;
-  --accent-contrast: #16150f;
-  --accent-gradient-end: #d9660f;
+  --stripe-alt: #15130d;
+  --accent-contrast: #15130d;
+  --accent-gradient-end: #ff8a1a;
   --accent-shadow: #a84f0a;
   --btn-disabled-bg: #4a4638;
-  --accent-soft: rgba(245, 166, 35, 0.16);
-  --accent-glow: rgba(245, 166, 35, 0.35);
+  --accent-soft: rgba(255, 176, 32, 0.18);
+  --accent-glow: rgba(255, 176, 32, 0.4);
 }
 
 html {
@@ -517,7 +525,7 @@ thead th.current-hour {
   font-family: var(--font-display);
 }
 .badge-pc { background: var(--accent-soft); color: var(--accent); }
-.badge-hd { background: var(--surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
+.badge-hd { background: var(--accent-2-soft); color: var(--accent-2-strong); }
 
 .list-table {
   width: 100%;
@@ -561,9 +569,9 @@ thead th.current-hour {
 }
 
 .btn-secondary {
-  background: var(--surface-alt);
-  border: 1px solid var(--accent);
-  color: var(--accent);
+  background: var(--accent-2-soft);
+  border: 1px solid var(--accent-2);
+  color: var(--accent-2-strong);
   margin-bottom: 8px;
 }
 
@@ -899,9 +907,4 @@ a { color: var(--accent); }
   .topbar-footer {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    width: 100%;
-  }
-  .topbar-footer .topbar-role-badge { text-align: center; }
-  body.sidebar-collapsed .topbar-footer .topbar-role-badge { font-size: 9px; paddin
+    align-items: stre
