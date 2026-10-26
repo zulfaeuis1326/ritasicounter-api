@@ -5,6 +5,7 @@ import { atLeast } from "../lib/roles";
 import { useAuthCheck } from "../hooks/useAuthCheck";
 import Topbar from "../components/home/Topbar";
 import DetailTable from "../components/display/DetailTable";
+import PitCards from "../components/display/PitCards";
 
 // three.js butuh DOM/canvas -- WAJIB no-SSR, kalau di-render di server bakal error.
 const Scene3D = dynamic(() => import("../components/display/Scene3D"), { ssr: false });
@@ -17,7 +18,7 @@ export default function Display() {
     minRole: (role) => atLeast(role, "pengawas"),
     redirectIfBelow: "/",
   });
-  const [view, setView] = useState("table"); // "table" | "3d"
+  const [view, setView] = useState("cards"); // "cards" | "table" | "3d"
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [clock, setClock] = useState("");
@@ -63,8 +64,8 @@ export default function Display() {
     return (
       <div className="container">
         <div className="card">
-          <div className="hint" style={{ color: "var(--danger)" }}>{authError}</div>
-          <button className="btn btn-secondary" style={{ width: "auto", padding: "0 16px", marginTop: 10 }} onClick={retryAuth}>
+          <div className="hint c-danger" >{authError}</div>
+          <button className="btn btn-secondary w-auto px-16 mt-10"  onClick={retryAuth}>
             Coba lagi
           </button>
         </div>
@@ -96,17 +97,23 @@ export default function Display() {
           <span>{data?.shift ? data.shift.label : "Tidak ada shift berjalan"}</span>
           <span className="display-topstrip-sep">&middot;</span>
           <span>mode: {modeLabel}</span>
-          <div className="display-topstrip-spacer" />
+        </div>
+
+        <div className="display-viewbar" role="tablist" aria-label="Pilih tampilan">
           <div className="display-view-toggle">
-            <button className={view === "table" ? "active" : ""} onClick={() => setView("table")}>Tabel Detail</button>
-            <button className={view === "3d" ? "active" : ""} onClick={() => setView("3d")}>Animasi 3D</button>
+            <button role="tab" aria-selected={view === "cards"} className={view === "cards" ? "active" : ""} onClick={() => setView("cards")}>Kartu PIT</button>
+            <button role="tab" aria-selected={view === "table"} className={view === "table" ? "active" : ""} onClick={() => setView("table")}>Tabel Detail</button>
+            <button role="tab" aria-selected={view === "3d"} className={view === "3d" ? "active" : ""} onClick={() => setView("3d")}>Animasi 3D</button>
           </div>
         </div>
 
-        {error && <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>Error: {error}</div></div>}
+        {error && <div className="card"><div className="hint c-danger" >Error: {error}</div></div>}
 
-        {view === "table" ? <DetailTable data={data} /> : <Scene3D data={data} />}
+        {view === "cards" && <PitCards data={data} />}
+        {view === "table" && <DetailTable data={data} />}
+        {view === "3d" && <Scene3D data={data} />}
       </div>
     </div>
   );
-}
+                                                                                                               }
+  
