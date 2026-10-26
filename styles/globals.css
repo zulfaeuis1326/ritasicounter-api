@@ -1543,3 +1543,14 @@ a { color: var(--accent); }
 .shift-menu-item:hover { background: var(--accent-soft); color: var(--accent); }
 .shift-menu-item-danger { color: var(--danger); }
 .shift-menu-item-danger:hover { background: var(--danger-soft); color: var(--danger); }
+
+.tv-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 22px; margin: 0 0 14px;
+  background: var(--accent); color: var(--accent-contrast);
+  border: 2px solid var(--text); border-radius: 0;
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  text-decoration: none; cursor: pointer;
+}
+.tv-btn:active { transform: scale(0.98); }
