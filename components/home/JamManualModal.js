@@ -40,10 +40,10 @@ export default function JamManualModal({ open, onClose, shiftType, currentHour, 
           })}
         </div>
         <div className="modal-actions">
-          <button className="btn btn-secondary" style={{ width: "auto", padding: "0 16px" }} onClick={function () { onPick(""); onClose(); }}>
+          <button className="btn btn-secondary w-auto px-16"  onClick={function () { onPick(""); onClose(); }}>
             Pakai Jam Sekarang
           </button>
-          <button className="btn" style={{ width: "auto", padding: "0 16px", background: "transparent", color: "var(--text-muted)" }} onClick={onClose}>
+          <button className="btn w-auto px-16 bg-transparent c-muted"  onClick={onClose}>
             Batal
           </button>
         </div>

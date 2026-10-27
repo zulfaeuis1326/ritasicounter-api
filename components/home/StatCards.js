@@ -9,6 +9,16 @@ export default function StatCards({ recap, allRecapUnits, totalFleetCount }) {
       .map(function (u) { return u.fleet_id; })
   );
 
+  // Unit yang sudah pernah ritasi di shift ini tapi sudah >= 2 jam tidak ada rit baru
+  const hours = (recap && recap.hours) || [];
+  const curIdx = recap ? hours.indexOf(recap.currentHour) : -1;
+  const idle = curIdx < 0 ? [] : allRecapUnits.filter(function (u) {
+    if (!u.total) return false;
+    let last = -1;
+    u.hourly.forEach(function (h, i) { if (h.total > 0) last = i; });
+    return curIdx - last >= 2;
+  });
+
   return (
     <div className="stat-cards">
       <div className="card stat-card-box">
@@ -30,6 +40,15 @@ export default function StatCards({ recap, allRecapUnits, totalFleetCount }) {
           <div className="stat-card-num stat-card-amber">{fleetIdsAktif.size}</div>
         </div>
         {totalFleetCount > 0 && <span className="stat-card-trend">/ {totalFleetCount} PC</span>}
+      </div>
+      <div className={"card stat-card-box stat-card-check" + (idle.length > 0 ? " has-idle" : "")}>
+        <div>
+          <div className="stat-card-lbl">Perlu Dicek</div>
+          <div className="stat-card-num">{idle.length}</div>
+          <div className="stat-card-sub">
+            {idle.length === 0 ? "Semua unit bergerak" : idle.slice(0, 4).map(function (u) { return u.name; }).join(", ") + (idle.length > 4 ? " +" + (idle.length - 4) : "") + " (>=2 jam sepi)"}
+          </div>
+        </div>
       </div>
     </div>
   );

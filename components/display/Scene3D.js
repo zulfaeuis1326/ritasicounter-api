@@ -498,7 +498,8 @@ export default function Scene3D({ data }) {
     state.labels = [];
     state.trucks = [];
 
-    const isNight = Number(data?.shift?.shiftType) === 2;
+    // Tema terang saja (tanpa mode gelap), termasuk saat shift malam.
+    const isNight = false;
     const theme = isNight ? NIGHT : DAY;
     state.scene.background.setHex(theme.sky);
     state.scene.fog.color.setHex(theme.fog);

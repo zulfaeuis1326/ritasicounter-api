@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import { atLeast } from "../lib/roles";
 import { ToastProvider, useToast } from "../components/Toast";
@@ -10,6 +10,20 @@ import RekapTable from "../components/home/RekapTable";
 import JamManualModal from "../components/home/JamManualModal";
 import UnitSetupScreen from "../components/home/UnitSetupScreen";
 import ShiftRowMenu from "../components/home/ShiftRowMenu";
+
+const QUEUE_KEY = "ritasi-queue-v1";
+function readQueue() {
+  try { return JSON.parse(window.localStorage.getItem(QUEUE_KEY) || "[]"); } catch (e) { return []; }
+}
+function writeQueue(q) {
+  try { window.localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); } catch (e) { /* abaikan */ }
+}
+// Jam lokal tambang dari jam perangkat + offset yang dikirim server ("... (UTC+8)")
+function localHourFrom(recap) {
+  const m = recap && recap.tzInfo ? /UTC\+(\d+)/.exec(recap.tzInfo) : null;
+  if (!m) return null;
+  return new Date(Date.now() + Number(m[1]) * 3600000).getUTCHours();
+}
 
 export default function Home() {
   return (
@@ -36,6 +50,10 @@ function HomeContent() {
   const [history, setHistory] = useState([]);
   const [pastShifts, setPastShifts] = useState([]);
   const [loadingClick, setLoadingClick] = useState(false);
+  // Kunci sinkron (state React terlambat satu render, jadi ketukan cepat bisa lolos)
+  const clickLockRef = useRef(false);
+  // Kunci idempotensi: dipertahankan selama klik yang sama belum pasti berhasil/gagal di server
+  const pendingClickRef = useRef(null);
   const [newUnitName, setNewUnitName] = useState("");
   const [showAllUnits, setShowAllUnits] = useState(false);
   const [reportHours, setReportHours] = useState([7, 12, 19]);
@@ -211,33 +229,141 @@ function HomeContent() {
     window.location.href = "/login";
   }
 
-  async function handleClick() {
+  const [online, setOnline] = useState(true);
+  const [queued, setQueued] = useState(0);
+  const flushingRef = useRef(false);
+
+  useEffect(function () {
+    setQueued(readQueue().length);
+    setOnline(navigator.onLine !== false);
+    const up = function () { setOnline(true); };
+    const down = function () { setOnline(false); };
+    window.addEventListener("online", up);
+    window.addEventListener("offline", down);
+    return function () { window.removeEventListener("online", up); window.removeEventListener("offline", down); };
+  }, []);
+
+  // Kirim antrean satu per satu (urut). Berhenti kalau jaringan/server bermasalah.
+  const flushQueue = useCallback(async function () {
+    if (flushingRef.current) return;
+    flushingRef.current = true;
+    let sent = 0, rejected = 0;
+    try {
+      let q = readQueue();
+      while (q.length > 0) {
+        const item = q[0];
+        let res;
+        try {
+          res = await fetch("/api/ritasi", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ unitId: item.unitId, material: item.material, jam: item.jam, clientRequestId: item.id }),
+          });
+        } catch (e) { break; }
+        if (res.status === 401 || res.status >= 500) break;
+        if (res.ok) sent++; else rejected++;
+        q = readQueue().filter(function (x) { return x.id !== item.id; });
+        writeQueue(q);
+      }
+    } finally {
+      flushingRef.current = false;
+    }
+    setQueued(readQueue().length);
+    if (sent) { loadRecap(); loadHistory(); toast(sent + " rit antrean terkirim"); }
+    if (rejected) toast(rejected + " rit antrean ditolak server (mungkin sudah beda shift)", "error");
+  }, [loadRecap, loadHistory, toast]);
+
+  useEffect(function () {
+    if (!authUser) return;
+    if (online && readQueue().length > 0) flushQueue();
+    const t = setInterval(function () { if (readQueue().length > 0) flushQueue(); }, 10000);
+    return function () { clearInterval(t); };
+  }, [authUser, online, flushQueue]);
+
+  // Batalkan rit yang barusan dicatat (dipanggil dari tombol di toast)
+  async function undoClick(clickId) {
+    try {
+      const res = await fetch("/api/ritasi/history", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: clickId }),
+      });
+      if (res.ok) {
+        loadRecap();
+        loadHistory();
+        toast("Rit dibatalkan");
+      } else {
+        const d = await res.json().catch(function () { return {}; });
+        toast("Gagal membatalkan: " + (d.error || res.status), "error");
+      }
+    } catch (err) {
+      toast("Gagal membatalkan (koneksi bermasalah)", "error");
+    }
+  }
+
+  // Satu ketukan pada tombol material = +1 rit untuk material itu.
+  async function handleClick(mat) {
+    const mt = typeof mat === "string" ? mat : material;
     if (!selectedUnit) { toast("Pilih unit dulu.", "error"); return; }
-    if (!material) { toast("Pilih material dulu.", "error"); return; }
+    if (!mt) { toast("Pilih material dulu.", "error"); return; }
+    setMaterial(mt);
+    if (clickLockRef.current) return;
+    clickLockRef.current = true;
     setLoadingClick(true);
+
+    // Kalau klik sebelumnya putus di tengah jalan (tidak tahu sudah masuk server atau belum),
+    // retry dengan kunci yang sama supaya tidak tercatat dobel. Kunci baru kalau isinya beda.
+    const signature = selectedUnit + "|" + mt + "|" + selectedJam;
+    if (!pendingClickRef.current || pendingClickRef.current.signature !== signature) {
+      const rid = (typeof crypto !== "undefined" && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+      pendingClickRef.current = { signature: signature, id: rid };
+    }
+
     try {
       const res = await fetch("/api/ritasi", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           unitId: Number(selectedUnit),
-          material: material,
+          material: mt,
           jam: selectedJam === "" ? undefined : Number(selectedJam),
+          clientRequestId: pendingClickRef.current.id,
         }),
       });
       if (!res.ok) {
+        pendingClickRef.current = null; // server menjawab tegas: klik ini gagal
         const data = await res.json().catch(function () { return {}; });
         toast("Gagal: " + (data.error || res.status), "error");
         return;
       }
+      pendingClickRef.current = null;
       const data = await res.json();
       setRecap(data);
       setSelectedJam("");
       loadHistory();
-      toast("Ritasi tercatat ✓");
+      if (data.duplicate || !data.clickId) {
+        toast("Ritasi sudah tercatat sebelumnya");
+      } else {
+        try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) { /* abaikan */ }
+        toast(mt + " +1 tercatat", "info", {
+          label: "Batalkan",
+          onClick: function () { undoClick(data.clickId); },
+        });
+      }
     } catch (err) {
-      toast("Gagal mencatat ritasi (koneksi bermasalah)", "error");
+      // Jaringan putus: simpan ke antrean (kunci idempotensi sama, jadi aman dikirim ulang).
+      const jamNow = selectedJam === "" ? localHourFrom(recap) : Number(selectedJam);
+      const q = readQueue();
+      q.push({ id: pendingClickRef.current.id, unitId: Number(selectedUnit), material: mt, jam: jamNow === null ? undefined : jamNow, ts: Date.now() });
+      writeQueue(q);
+      setQueued(q.length);
+      pendingClickRef.current = null;
+      setSelectedJam("");
+      toast(mt + " +1 disimpan di antrean (offline)");
     } finally {
+      clickLockRef.current = false;
       setLoadingClick(false);
     }
   }
@@ -412,6 +538,10 @@ function HomeContent() {
         <ShiftBanner recap={recap} recapError={recapError} clock={clock} />
 
         {canMonitorAll && (
+          <a className="tv-btn" href="/display">Tonton TV</a>
+        )}
+
+        {canMonitorAll && (
           <StatCards recap={recap} allRecapUnits={allRecapUnits} totalFleetCount={fleets.length} />
         )}
 
@@ -432,7 +562,9 @@ function HomeContent() {
               currentHourData={currentHourData}
               selectedUnitRecap={selectedUnitRecap}
               loadingClick={loadingClick}
-              onClick={handleClick}
+              onClickMaterial={handleClick}
+              online={online}
+              queued={queued}
             />
           )}
 
@@ -454,14 +586,14 @@ function HomeContent() {
             {isAdmin && (
               <section className="card">
                 <h2 className="sec-title-icon">Tambah Unit</h2>
-                <form onSubmit={handleAddUnit} style={{ display: "flex", gap: 8 }}>
+                <form onSubmit={handleAddUnit} className="d-flex gap-8">
                   <input
                     value={newUnitName}
                     onChange={function (e) { setNewUnitName(e.target.value); }}
                     placeholder="Contoh: HD-05"
-                    style={{ flex: 1 }}
-                  />
-                  <button className="btn btn-secondary" style={{ width: "auto", padding: "0 16px" }}>
+                    className="flex-1"
+ />
+                  <button className="btn btn-secondary w-auto px-16" >
                     Tambah
                   </button>
                 </form>
@@ -480,7 +612,7 @@ function HomeContent() {
                 </button>
                 {pastShifts.length > 0 && (
                   <>
-                    <div className="field-label" style={{ marginTop: 14, marginBottom: 6 }}>Riwayat Shift</div>
+                    <div className="field-label mt-14 mb-6" >Riwayat Shift</div>
                     {pastShifts.map(function (s) {
                       return (
                         <div key={s.id} className="history-row">
@@ -496,7 +628,7 @@ function HomeContent() {
 
             <section className="card">
               <h2 className="sec-title-icon">Riwayat & Revisi Ritasi</h2>
-              <div className="hint" style={{ marginBottom: 8 }}>
+              <div className="hint mb-8" >
                 Salah pencet material? Hapus entri yang salah di sini. ({history.length} entri)
               </div>
               {history.length === 0 && <div className="hint">Belum ada ritasi tercatat.</div>}

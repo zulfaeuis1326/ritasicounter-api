@@ -100,6 +100,16 @@ export default function Display() {
         </div>
 
         <div className="display-viewbar" role="tablist" aria-label="Pilih tampilan">
+          <button
+            className="tv-btn tv-btn-full"
+            onClick={() => {
+              const el = document.documentElement;
+              if (document.fullscreenElement) document.exitFullscreen();
+              else if (el.requestFullscreen) el.requestFullscreen();
+            }}
+          >
+            Layar Penuh
+          </button>
           <div className="display-view-toggle">
             <button role="tab" aria-selected={view === "cards"} className={view === "cards" ? "active" : ""} onClick={() => setView("cards")}>Kartu PIT</button>
             <button role="tab" aria-selected={view === "table"} className={view === "table" ? "active" : ""} onClick={() => setView("table")}>Tabel Detail</button>
@@ -115,5 +125,4 @@ export default function Display() {
       </div>
     </div>
   );
-                                                                                                               }
-  
+}

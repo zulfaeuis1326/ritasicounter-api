@@ -195,12 +195,12 @@ export default function KelolaFleet() {
 
       <main className="container">
       {error && (
-        <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>Error: {error}</div></div>
+        <div className="card"><div className="hint c-danger" >Error: {error}</div></div>
       )}
 
       <div className="card">
         <div className="section-title">Unit Hauler → Masuk PC Berapa, Lokasi Mana</div>
-        <div className="field-label" style={{ marginBottom: 6 }}>Unit</div>
+        <div className="field-label mb-6" >Unit</div>
         <Combobox
           value={selectedUnitId}
           onChange={setSelectedUnitId}
@@ -212,7 +212,7 @@ export default function KelolaFleet() {
           <div className="fleet-detail-panel">
             <div className="fleet-detail-title">{selectedUnit.name}</div>
 
-            <div className="field-label" style={{ marginBottom: 6 }}>Masuk PC (Fleet)</div>
+            <div className="field-label mb-6" >Masuk PC (Fleet)</div>
             <Combobox
               value={draftFleetId}
               onChange={setDraftFleetId}
@@ -221,7 +221,7 @@ export default function KelolaFleet() {
               emptyLabel="-- Belum gabung PC --"
             />
 
-            <div className="field-label" style={{ marginBottom: 6, marginTop: 12 }}>Lokasi (PIT)</div>
+            <div className="field-label mb-6 mt-12" >Lokasi (PIT)</div>
             <Combobox
               value={draftPitId}
               onChange={setDraftPitId}
@@ -231,11 +231,11 @@ export default function KelolaFleet() {
             />
 
             <button
-              className="btn btn-primary"
-              style={{ marginTop: 14 }}
+              className="btn btn-primary mt-14"
+
               onClick={handleSaveAssign}
               disabled={savingAssign}
-            >
+ >
               {savingAssign ? "Menyimpan..." : "Simpan"}
             </button>
             {savedMsg && !savingAssign && (
@@ -254,15 +254,15 @@ export default function KelolaFleet() {
         </button>
         {showAddPc && (
           <form onSubmit={handleAddFleet} className="add-form">
-            <div className="field-label" style={{ marginBottom: 6 }}>Nama PC</div>
+            <div className="field-label mb-6" >Nama PC</div>
             <input
-              className="field-input"
+              className="field-input mb-12"
               value={newFleetName}
               onChange={(e) => setNewFleetName(e.target.value)}
               placeholder="Contoh: E52099"
-              style={{ marginBottom: 12 }}
-            />
-            <div className="field-label" style={{ marginBottom: 6 }}>Lokasi (PIT)</div>
+
+ />
+            <div className="field-label mb-6" >Lokasi (PIT)</div>
             <Combobox
               value={newFleetPit}
               onChange={setNewFleetPit}
@@ -270,7 +270,7 @@ export default function KelolaFleet() {
               placeholder="Cari lokasi..."
               emptyLabel="-- Tanpa lokasi dulu --"
             />
-            <button className="auth-submit" style={{ marginTop: 12 }}>Simpan PC</button>
+            <button className="auth-submit mt-12" >Simpan PC</button>
           </form>
         )}
       </div>
@@ -285,12 +285,12 @@ export default function KelolaFleet() {
         {showAddPit && (
           <form onSubmit={handleAddPit} className="add-form">
             <input
-              className="field-input"
+              className="field-input mb-12"
               value={newPitName}
               onChange={(e) => setNewPitName(e.target.value)}
               placeholder="Contoh: PIT BARU"
-              style={{ marginBottom: 12 }}
-            />
+
+ />
             <button className="auth-submit">Simpan Lokasi</button>
           </form>
         )}

@@ -35,15 +35,24 @@ export default function RitasiPanel({
   currentHourData,
   selectedUnitRecap,
   loadingClick,
-  onClick,
+  onClickMaterial,
+  online,
+  queued,
 }) {
   const [shareOpen, setShareOpen] = useState(false);
 
   return (
     <section className="card">
       <h2 className="sec-title-icon">Klik Ritasi</h2>
+      {(online === false || queued > 0) && (
+        <div className={"net-chip " + (online === false ? "net-offline" : "net-sync")}>
+          {online === false
+            ? "Offline" + (queued > 0 ? " - " + queued + " rit menunggu dikirim" : "")
+            : "Mengirim " + queued + " rit antrean..."}
+        </div>
+      )}
 
-      <div className="field-label" style={{ marginBottom: 6 }}>Unit</div>
+      <div className="field-label mb-6" >Unit</div>
       {isAdmin ? (
         <>
           <Combobox
@@ -69,7 +78,7 @@ export default function RitasiPanel({
         </div>
       )}
 
-      <div className="field-label" style={{ marginBottom: 6, marginTop: 12 }}>Klik Material (+1 Rit)</div>
+      <div className="field-label mb-6 mt-12" >Ketuk material = +1 Rit</div>
       <div className="mat-grid">
         {MATERIALS.map(function (m) {
           const count = selectedUnitRecap && selectedUnitRecap.materialTotals ? (selectedUnitRecap.materialTotals[m] || 0) : 0;
@@ -77,7 +86,8 @@ export default function RitasiPanel({
             <button
               key={m}
               className={"mat-btn " + (material === m ? "active" : "")}
-              onClick={function () { onChangeMaterial(m); }}
+              disabled={!selectedUnit || loadingClick}
+              onClick={function () { onClickMaterial(m); }}
             >
               {m}
               <span className="mat-btn-cnt">{count} rit</span>
@@ -89,40 +99,31 @@ export default function RitasiPanel({
       <div className="ritasi-jam-row">
         <div>
           <div className="field-label" style={{ marginBottom: 2 }}>Jam Ritasi</div>
-          <div className="hint" style={{ marginBottom: 0 }}>
+          <div className="hint mb-0" >
             {selectedJam === "" ? "Sekarang (" + (recap ? String(recap.currentHour).padStart(2, "0") + ":00" : "-") + ")" : String(selectedJam).padStart(2, "0") + ":00 (manual — buat nutup yang kelewat)"}
           </div>
         </div>
-        <button className="btn btn-secondary" style={{ width: "auto", padding: "0 14px", marginBottom: 0 }} onClick={onOpenJamModal}>
+        <button className="btn btn-secondary w-auto px-14 mb-0"  onClick={onOpenJamModal}>
           Ubah
         </button>
       </div>
 
-      <button
-        className="big-click-btn"
-        style={{ marginTop: 14 }}
-        disabled={!selectedUnit || !material || loadingClick}
-        onClick={onClick}
-      >
-        {loadingClick ? "..." : "+ RITASI"}
-      </button>
-
-      {!material && <div className="hint">Pilih material dulu sebelum klik ritasi.</div>}
+      {!selectedUnit && <div className="hint">Pilih unit dulu, lalu ketuk material.</div>}
 
       {!isAdmin && (
         <button
-          className="btn btn-primary rekap-share-btn"
-          style={{ marginTop: 12 }}
+          className="btn btn-primary rekap-share-btn mt-12"
+
           disabled={!selectedUnitRecap || !selectedUnitRecap.total}
           onClick={function () { setShareOpen(true); }}
-        >
+ >
           <WhatsappIcon /> Share ke WA
         </button>
       )}
 
       {selectedUnitRecap && selectedUnitRecap.hourly && selectedUnitRecap.hourly.length > 0 && (
         <>
-          <div className="field-label" style={{ marginTop: 16, marginBottom: 6 }}>
+          <div className="field-label mt-16 mb-6" >
             Rincian Per Jam (Real-Time)
           </div>
           <div className="table-scroll">
@@ -137,7 +138,7 @@ export default function RitasiPanel({
                     <tr key={h.jam} className={isCurrent ? "row-selected" : ""}>
                       <td>{String(h.jam).padStart(2, "0")}:00</td>
                       <td>{formatJamCell(h)}</td>
-                      <td style={{ fontWeight: 700 }}>{h.total}</td>
+                      <td className="fw-700">{h.total}</td>
                     </tr>
                   );
                 })}
@@ -147,7 +148,7 @@ export default function RitasiPanel({
         </>
       )}
 
-      <div className="stat-row" style={{ marginTop: 16 }}>
+      <div className="stat-row mt-16" >
         <span>Ritasi jam ini ({recap ? recap.currentHour : "-"})</span>
         <b>{currentHourData ? currentHourData.total : 0}</b>
       </div>

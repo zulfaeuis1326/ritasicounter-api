@@ -114,6 +114,7 @@ export default function Dashboard() {
       <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="dashboard" />
 
       <main className="container">
+      <a className="tv-btn" href="/display">Tonton TV</a>
       <div className="card">
         <div className="clock" style={{ fontSize: 18 }}>Dashboard Analitik</div>
       </div>
@@ -136,14 +137,14 @@ export default function Dashboard() {
       </div>
 
       {error && (
-        <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>Error: {error}</div></div>
+        <div className="card"><div className="hint c-danger" >Error: {error}</div></div>
       )}
 
       {data && (
         <>
           <div className="card">
             <div className="section-title">Total Ritasi ({range === "day" ? "per Hari" : "per Shift"})</div>
-            <div className="hint" style={{ marginBottom: 8 }}>Grand total: <b>{data.grandTotal}</b></div>
+            <div className="hint mb-8" >Grand total: <b>{data.grandTotal}</b></div>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={data.bucketSeries}>
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
@@ -191,7 +192,7 @@ export default function Dashboard() {
 
           <div className="card">
             <div className="section-title">Tren Produksi per Jam</div>
-            <div className="hint" style={{ marginBottom: 8 }}>
+            <div className="hint mb-8" >
               Akumulasi semua {range === "day" ? "hari" : "shift"} dalam rentang ini, per jam (00–23).
             </div>
             <ResponsiveContainer width="100%" height={220}>
@@ -208,7 +209,7 @@ export default function Dashboard() {
 
       <div className="card">
         <div className="section-title">Rekap Per Jam - Shift Berjalan (Semua Unit)</div>
-        <div className="hint" style={{ marginBottom: 8 }}>
+        <div className="hint mb-8" >
           Kolom jam yang ditandai adalah jam yang sedang berjalan saat ini.
           {hiddenUnitCount > 0 && !showAllUnits && (
             <> {hiddenUnitCount} unit belum ada ritasi disembunyikan — <a href="#" onClick={function (e) { e.preventDefault(); setShowAllUnits(true); }}>tampilkan semua</a>.</>
@@ -236,7 +237,7 @@ export default function Dashboard() {
               {visibleUnits.map(function (u) {
                 return (
                   <tr key={u.id}>
-                    <td style={{ fontWeight: 700 }}>{u.name}</td>
+                    <td className="fw-700">{u.name}</td>
                     {u.hourly.map(function (h) {
                       return (
                         <td key={h.jam} className={h.jam === recap.currentHour ? "current-hour" : ""}>
@@ -244,7 +245,7 @@ export default function Dashboard() {
                         </td>
                       );
                     })}
-                    <td style={{ fontWeight: 700 }}>{u.total}</td>
+                    <td className="fw-700">{u.total}</td>
                   </tr>
                 );
               })}
@@ -286,7 +287,7 @@ export default function Dashboard() {
               {visibleUnits.map(function (u) {
                 return (
                   <tr key={u.id}>
-                    <td style={{ fontWeight: 700 }}>{u.name}</td>
+                    <td className="fw-700">{u.name}</td>
                     <td>{u.total}</td>
                     {MATERIALS.map(function (m) {
                       return <td key={m}>{(u.materialTotals && u.materialTotals[m]) || 0}</td>;

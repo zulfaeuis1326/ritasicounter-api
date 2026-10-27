@@ -77,7 +77,18 @@ CREATE TABLE IF NOT EXISTS ritasi_clicks (
   material TEXT NOT NULL,
   jam SMALLINT NOT NULL,
   operator_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  fleet_id INTEGER REFERENCES fleets(id) ON DELETE SET NULL,  -- snapshot saat klik
+  pit_id INTEGER REFERENCES pits(id) ON DELETE SET NULL,      -- snapshot saat klik
+  client_request_id TEXT,                                      -- kunci idempotensi dari klien
   clicked_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ritasi_clicks_request_key
+  ON ritasi_clicks(client_request_id) WHERE client_request_id IS NOT NULL;
+
+-- ===== Pengaturan aplikasi (jam laporan, dll) =====
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_clicks_shift ON ritasi_clicks(shift_id);

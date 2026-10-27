@@ -46,13 +46,39 @@ export default async function handler(req, res) {
         jam = requestedJam;
       }
 
-      await pool.query(
-        `INSERT INTO ritasi_clicks (unit_id, shift_id, material, jam, operator_id) VALUES ($1, $2, $3, $4, $5)`,
-        [unitId, shift.id, material, jam, user.id]
+      const unitRes = await pool.query(
+        `SELECT fleet_id, pit_id FROM units WHERE id = $1 AND active = true`,
+        [unitId]
       );
+      if (unitRes.rows.length === 0) {
+        return res.status(404).json({ error: "Unit tidak ditemukan / sudah tidak aktif" });
+      }
+
+      // Kunci idempotensi (opsional, dikirim klien). Kunci sama = klik yang sama
+      // (retry jaringan / ketuk ganda), jadi tidak dicatat dua kali.
+      let requestId = req.body?.clientRequestId;
+      if (requestId !== undefined && requestId !== null) {
+        requestId = String(requestId);
+        if (requestId.length === 0 || requestId.length > 64) {
+          return res.status(400).json({ error: "clientRequestId tidak valid" });
+        }
+      } else {
+        requestId = null;
+      }
+
+      const inserted = await pool.query(
+        `INSERT INTO ritasi_clicks (unit_id, shift_id, material, jam, operator_id, fleet_id, pit_id, client_request_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (client_request_id) WHERE client_request_id IS NOT NULL DO NOTHING
+         RETURNING id`,
+        [unitId, shift.id, material, jam, user.id, unitRes.rows[0].fleet_id, unitRes.rows[0].pit_id, requestId]
+      );
+      const duplicate = inserted.rows.length === 0;
 
       const recap = await buildRecap(shift.id, lockedUnitId, lockedOperatorId);
-      return res.status(201).json({ currentHour, tzInfo: `${TZ_NAME} (UTC+${OFFSET_HOURS})`, ...recap });
+      return res
+        .status(duplicate ? 200 : 201)
+        .json({ currentHour, tzInfo: `${TZ_NAME} (UTC+${OFFSET_HOURS})`, duplicate, clickId: duplicate ? null : inserted.rows[0].id, ...recap });
     }
 
     if (req.method === "GET") {

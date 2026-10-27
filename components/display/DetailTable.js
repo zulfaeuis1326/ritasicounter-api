@@ -28,7 +28,7 @@ export default function DetailTable({ data }) {
                     <th>Hauler</th>
                     <th>Material (rit)</th>
                     <th>Update terakhir</th>
-                    <th style={{ textAlign: "right" }}>Total Rit</th>
+                    <th className="ta-right">Total Rit</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -43,7 +43,7 @@ export default function DetailTable({ data }) {
                         ))}
                       </td>
                       <td>{h.lastTime || "-"}</td>
-                      <td style={{ textAlign: "right" }}>{h.totalRit}</td>
+                      <td className="ta-right">{h.totalRit}</td>
                     </tr>
                   ))}
                 </tbody>

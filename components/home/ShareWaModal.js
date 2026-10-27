@@ -68,9 +68,9 @@ export default function ShareWaModal({ open, onClose, title, subtitle, hours, bu
           })}
         </div>
 
-        <div className="modal-actions" style={{ marginTop: 14 }}>
-          <button className="btn btn-secondary" style={{ width: "auto" }} onClick={onClose}>Batal</button>
-          <button className="btn btn-primary rekap-share-btn" style={{ width: "auto" }} disabled={selectedJams.length === 0} onClick={handleSend}>
+        <div className="modal-actions mt-14" >
+          <button className="btn btn-secondary w-auto"  onClick={onClose}>Batal</button>
+          <button className="btn btn-primary rekap-share-btn w-auto"  disabled={selectedJams.length === 0} onClick={handleSend}>
             Kirim ke WA
           </button>
         </div>

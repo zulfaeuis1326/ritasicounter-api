@@ -124,5 +124,4 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
       </div>
     </header>
   );
-  }
-    
+}

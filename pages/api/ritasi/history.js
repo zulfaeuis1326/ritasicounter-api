@@ -3,6 +3,7 @@ const { getOrCreateOpenShift } = require("../../../lib/shift");
 const { buildRecap } = require("../../../lib/recap");
 const { getUserFromReq } = require("../../../lib/auth");
 const { atLeast } = require("../../../lib/roles");
+const { logActivity } = require("../../../lib/activity");
 
 export default async function handler(req, res) {
   try {
@@ -34,7 +35,11 @@ export default async function handler(req, res) {
       const { id } = req.body || {};
       if (!id) return res.status(400).json({ error: "id klik wajib diisi" });
 
-      const existing = await pool.query(`SELECT operator_id, unit_id FROM ritasi_clicks WHERE id = $1`, [id]);
+      const existing = await pool.query(
+        `SELECT rc.operator_id, rc.unit_id, rc.shift_id, rc.material, rc.jam, u.name AS unit_name
+         FROM ritasi_clicks rc JOIN units u ON u.id = rc.unit_id WHERE rc.id = $1`,
+        [id]
+      );
       if (existing.rows.length === 0) {
         return res.status(404).json({ error: "Data ritasi tidak ditemukan (mungkin sudah dihapus)" });
       }
@@ -49,6 +54,15 @@ export default async function handler(req, res) {
       );
 
       const shiftId = deleted.rows[0].shift_id;
+      const row = existing.rows[0];
+      await logActivity(user.id, "delete_ritasi", {
+        clickId: id,
+        shiftId,
+        unit: row.unit_name,
+        material: row.material,
+        jam: row.jam,
+        operatorId: row.operator_id,
+      });
       const lockedUnitId = user.role === "operator" ? user.unit_id : null;
       const lockedOperatorId = user.role === "operator" ? user.id : null;
       const recap = await buildRecap(shiftId, lockedUnitId, lockedOperatorId);

@@ -1,0 +1,181 @@
+/* ===== Halaman Display (/display) -- buat dipajang di layar TV/monitor ===== */
+.display-page {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.display-topstrip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.display-live-dot { color: var(--danger); font-weight: 700; }
+.display-topstrip-sep { opacity: 0.5; }
+.display-topstrip-spacer { flex: 1; }
+
+.display-view-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.display-view-toggle button {
+  background: var(--surface);
+  border: none;
+  padding: 7px 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+}
+.display-view-toggle button:last-child { border-right: none; }
+.display-view-toggle button.active { background: var(--accent); color: var(--accent-contrast); }
+
+.display-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+/* --- Tabel detail --- */
+.display-pit-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.display-pit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.display-pit-stats { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+
+.display-fleet-block { padding: 10px 16px; border-top: 1px solid var(--border); }
+.display-fleet-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.display-fleet-stats { font-family: var(--font-mono); }
+
+.display-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.display-table th {
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.display-table td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.display-table tbody tr:last-child td { border-bottom: none; }
+
+
+.display-material-chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  margin: 2px 4px 2px 0;
+  color: #fff;
+  background: var(--text-muted);
+}
+.display-material-chip[data-material="OB"] { background: var(--mat-ob); }
+.display-material-chip[data-material="COAL"] { background: var(--mat-coal); }
+.display-material-chip[data-material="SOIL"] { background: var(--mat-soil); }
+.display-material-chip[data-material="SOLU"] { background: var(--mat-solu); }
+.display-material-chip[data-material="MUD"] { background: var(--mat-mud); }
+
+.display-grandtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--accent-strong);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* --- Scene 3D --- */
+.display-3d-wrap {
+  position: relative;
+  width: 100%;
+  height: 72vh;
+  min-height: 420px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #0a0e18;
+}
+.display-3d-canvas-mount { position: absolute; inset: 0; }
+.display-3d-canvas-mount canvas { display: block; width: 100%; height: 100%; }
+.display-3d-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.display-3d-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(20, 24, 32, 0.85);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.display-3d-label-pit {
+  font-family: var(--font-display);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: var(--accent-strong);
+}
+.display-3d-label-truck { background: rgba(20, 24, 32, 0.92); }
+
+@media (max-width: 720px) {
+  .display-3d-wrap { height: 55vh; }
+  .display-topstrip { font-size: 11px; }
+  .display-table { font-size: 12px; }
+}
+

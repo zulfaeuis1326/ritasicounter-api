@@ -1,6 +1,7 @@
 const { pool, ensureSchema } = require("../../lib/db");
 const { getUserFromReq } = require("../../lib/auth");
 const { atLeast } = require("../../lib/roles");
+const { OFFSET_HOURS } = require("../../lib/time");
 
 export default async function handler(req, res) {
   try {
@@ -32,9 +33,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ shift: null, pits: [], grandTotalRit: 0 });
     }
 
-    // Catatan: pit/fleet di sini ikut assignment TERKINI unit (units.pit_id/fleet_id),
-    // bukan assignment pas klik dicatat -- cukup akurat buat tampilan live "hari ini",
-    // tapi kalau unit pindah PIT di tengah shift, histori lama ikut keitung di PIT barunya.
+    // Pit/fleet diambil dari snapshot di tiap klik (ritasi_clicks.pit_id/fleet_id),
+    // jadi unit yang dipindah PIT di tengah shift tidak menggeser rekap lama.
     const rowsRes = await pool.query(
       `SELECT
          COALESCE(p.name, 'Belum ada PIT') AS pit,
@@ -42,15 +42,15 @@ export default async function handler(req, res) {
          u.name AS hauler,
          rc.material,
          COUNT(*)::int AS rit_count,
-         to_char(MAX(rc.clicked_at) AT TIME ZONE 'Asia/Makassar', 'HH24:MI') AS last_time
+         to_char(MAX(rc.clicked_at) AT TIME ZONE 'UTC' + make_interval(hours => $2), 'HH24:MI') AS last_time
        FROM ritasi_clicks rc
        JOIN units u ON u.id = rc.unit_id
-       LEFT JOIN fleets f ON f.id = u.fleet_id
-       LEFT JOIN pits p ON p.id = u.pit_id
+       LEFT JOIN fleets f ON f.id = rc.fleet_id
+       LEFT JOIN pits p ON p.id = rc.pit_id
        WHERE rc.shift_id = $1
        GROUP BY p.name, f.name, u.name, rc.material
        ORDER BY p.name NULLS LAST, f.name NULLS LAST, u.name, rc.material`,
-      [shift.id]
+      [shift.id, OFFSET_HOURS]
     );
 
     // Susun jadi struktur bertingkat Pit -> Fleet -> Hauler, masing-masing dengan

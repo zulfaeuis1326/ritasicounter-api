@@ -18,7 +18,7 @@ lib/               -> logic backend (db, auth, shift, recap, roles, dll)
 pages/             -> halaman + API routes (Next.js pages router)
   admin/           -> halaman khusus admin/pengawas/superadmin
   api/             -> semua endpoint backend
-styles/            -> globals.css (satu file CSS untuk seluruh app)
+styles/            -> CSS dipecah per bagian (base, components, auth, layout, panels, display, extras, tweaks) + utilities.css; urutan import ada di pages/_app.js
 public/            -> aset statis (taruh logo.png kamu di sini)
 schema.sql         -> skema database final, buat setup cepat di server baru
 ```

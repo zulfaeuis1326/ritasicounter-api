@@ -83,6 +83,27 @@ export default function AdminOperators() {
     }
   }
 
+  async function handleResetPassword(userId, username) {
+    const pw = prompt(`Password baru untuk "${username}" (minimal 8 karakter):`);
+    if (pw === null) return;
+    if (pw.length < 8) { alert("Password minimal 8 karakter."); return; }
+    try {
+      const res = await fetch("/api/admin/operators", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "reset_password", newPassword: pw }),
+      });
+      if (res.ok) {
+        alert(`Password "${username}" sudah diganti. Dia akan logout dari semua perangkat.`);
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal reset password: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal reset password (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
   async function handleRevoke(userId, username) {
     if (!confirm(`Paksa logout "${username}" dari semua perangkat? Dia harus login ulang.`)) return;
     try {
@@ -186,8 +207,8 @@ export default function AdminOperators() {
     return (
       <div className="container">
         <div className="card">
-          <div className="hint" style={{ color: "var(--danger)" }}>{authError}</div>
-          <button className="btn btn-secondary" style={{ width: "auto", padding: "0 16px", marginTop: 10 }} onClick={retryAuth}>
+          <div className="hint c-danger" >{authError}</div>
+          <button className="btn btn-secondary w-auto px-16 mt-10"  onClick={retryAuth}>
             Coba lagi
           </button>
         </div>
@@ -213,7 +234,7 @@ export default function AdminOperators() {
       <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="akun" />
 
       <div className="container">
-        {error && <div className="card"><div className="hint" style={{ color: "var(--danger)" }}>{error}</div></div>}
+        {error && <div className="card"><div className="hint c-danger" >{error}</div></div>}
 
         <div className="section-title">Daftar Akun</div>
         {list.map((u) => (
@@ -234,7 +255,7 @@ export default function AdminOperators() {
 
             {u.status === "pending" ? (
               <div className="akun-row-actions">
-                <button className="btn btn-secondary" style={{ width: "auto", padding: "0 14px" }} onClick={() => handleApprove(u.id, u.username)}>
+                <button className="btn btn-secondary w-auto px-14"  onClick={() => handleApprove(u.id, u.username)}>
                   Approve
                 </button>
                 <button className="btn-mini-danger" onClick={() => handleReject(u.id, u.username)}>
@@ -259,6 +280,11 @@ export default function AdminOperators() {
                     {u.unit_id && (
                       <button className="btn-mini-danger" onClick={() => handleReset(u.id, u.username)}>
                         Reset Unit
+                      </button>
+                    )}
+                    {u.id !== authUser.id && (
+                      <button className="btn-mini-danger" onClick={() => handleResetPassword(u.id, u.username)}>
+                        Reset Password
                       </button>
                     )}
                     {u.id !== authUser.id && (
@@ -293,6 +319,11 @@ export default function AdminOperators() {
                           <option key={r} value={r}>{ROLE_LABEL[r]}</option>
                         ))}
                     </select>
+                  )}
+                  {(authUser.role === "superadmin" || (u.role !== "admin" && u.role !== "superadmin")) && (
+                    <button className="btn-mini-danger" onClick={() => handleResetPassword(u.id, u.username)}>
+                      Reset Password
+                    </button>
                   )}
                   <button className="btn-mini-danger" onClick={() => handleRevoke(u.id, u.username)}>
                     Paksa Logout

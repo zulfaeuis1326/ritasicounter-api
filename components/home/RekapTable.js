@@ -38,6 +38,7 @@ function buildHourOptions(recap) {
 export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnits, canMonitorAll, isAdmin, recap, onExport, reportHours, onSaveReportHours }) {
   const [search, setSearch] = useState("");
   const [settingOpen, setSettingOpen] = useState(false);
+  const [openFleets, setOpenFleets] = useState({});
   const [draftHours, setDraftHours] = useState(reportHours || []);
 
   useEffect(function () {
@@ -63,6 +64,34 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
       return prev.includes(h) ? prev.filter(function (x) { return x !== h; }) : [...prev, h].sort(function (a, b) { return a - b; });
     });
   }
+
+  // Kelompokkan per fleet (PC/Loader). Default tertutup; saat mencari, semua terbuka.
+  const groupMap = new Map();
+  visible.forEach(function (u) {
+    const key = u.fleet_name || "Belum ada Fleet";
+    if (!groupMap.has(key)) groupMap.set(key, { name: key, pit: u.pit_name || "-", units: [], total: 0, mat: {} });
+    const g = groupMap.get(key);
+    g.units.push(u);
+    g.total += u.total;
+    MATERIALS.forEach(function (mt) { g.mat[mt] = (g.mat[mt] || 0) + ((u.materialTotals && u.materialTotals[mt]) || 0); });
+  });
+  const groups = Array.from(groupMap.values()).sort(function (a, b) {
+    return b.total - a.total || a.name.localeCompare(b.name);
+  });
+  const searching = search.trim().length > 0;
+  const isOpen = function (name) { return searching || openFleets[name] === true; };
+  function toggleFleet(name) {
+    setOpenFleets(function (prev) { return { ...prev, [name]: prev[name] !== true }; });
+  }
+  function setAllFleets(openAll) {
+    const next = {};
+    groups.forEach(function (g) { next[g.name] = openAll; });
+    setOpenFleets(next);
+  }
+
+  const maxCell = Math.max(1, ...visible.flatMap(function (u) {
+    return MATERIALS.map(function (m) { return (u.materialTotals && u.materialTotals[m]) || 0; });
+  }));
 
   return (
     <section className="card">
@@ -121,7 +150,7 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
                   );
                 })}
               </div>
-              <button className="btn btn-primary" style={{ marginTop: 10 }} onClick={function () { onSaveReportHours(draftHours); setSettingOpen(false); }}>
+              <button className="btn btn-primary mt-10"  onClick={function () { onSaveReportHours(draftHours); setSettingOpen(false); }}>
                 Simpan
               </button>
             </div>
@@ -129,8 +158,12 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
         </div>
       )}
 
+      <div className="fleet-tools">
+        <button className="btn btn-secondary w-auto px-14" onClick={function () { setAllFleets(true); }}>Buka semua fleet</button>
+        <button className="btn btn-secondary w-auto px-14" onClick={function () { setAllFleets(false); }}>Tutup semua</button>
+      </div>
       <div className="table-scroll">
-        <table className="list-table">
+        <table className="list-table rekap-table">
           <thead>
             <tr>
               <th>Unit</th><th>Fleet</th><th>PIT</th>
@@ -138,24 +171,46 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
               <th>Total</th>
             </tr>
           </thead>
-          <tbody>
-            {visible.map(function (u) {
-              return (
-                <tr key={u.id}>
-                  <td style={{ fontWeight: 700 }}>{u.name}</td>
-                  <td>{u.fleet_name || "-"}</td>
-                  <td>{u.pit_name || "-"}</td>
-                  {MATERIALS.map(function (m) {
-                    return <td key={m}>{(u.materialTotals && u.materialTotals[m]) || 0}</td>;
-                  })}
-                  <td style={{ fontWeight: 700 }}>{u.total}</td>
+          {groups.map(function (g) {
+            const open = isOpen(g.name);
+            return (
+              <tbody key={g.name}>
+                <tr className="fleet-row" onClick={function () { toggleFleet(g.name); }}>
+                  <td colSpan={3}>
+                    <span className={"fleet-caret" + (open ? " open" : "")}>&#9656;</span>
+                    <b>{g.name}</b>
+                    <span className="fleet-meta">{g.units.length} HD &middot; {g.pit}</span>
+                  </td>
+                  {MATERIALS.map(function (mt) { return <td key={mt}>{g.mat[mt] || 0}</td>; })}
+                  <td><b>{g.total}</b></td>
                 </tr>
-              );
-            })}
-            {visible.length === 0 && (
+                {open && g.units.map(function (u) {
+                  return (
+                    <tr key={u.id}>
+                      <td className="fw-700">{u.name}</td>
+                      <td>{u.fleet_name || "-"}</td>
+                      <td>{u.pit_name || "-"}</td>
+                      {MATERIALS.map(function (mt) {
+                        const v = (u.materialTotals && u.materialTotals[mt]) || 0;
+                        const a = v > 0 ? 0.1 + 0.45 * (v / maxCell) : 0;
+                        return (
+                          <td key={mt} style={v > 0 ? { background: "rgba(239,138,0," + a.toFixed(2) + ")", fontWeight: 600 } : { color: "var(--text-muted)" }}>
+                            {v}
+                          </td>
+                        );
+                      })}
+                      <td className="fw-700">{u.total}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            );
+          })}
+          {groups.length === 0 && (
+            <tbody>
               <tr><td colSpan={4 + MATERIALS.length} className="hint">Gak ada unit yang cocok.</td></tr>
-            )}
-          </tbody>
+            </tbody>
+          )}
         </table>
       </div>
 

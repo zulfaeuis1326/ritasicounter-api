@@ -95,7 +95,7 @@ export default function Register() {
         <div className="auth-subtitle">Buat akun baru untuk mulai pakai RitasiCounter</div>
 
         {pendingMessage ? (
-          <div className="field-group" style={{ textAlign: "center" }}>
+          <div className="field-group ta-center" >
             <div className="hint" style={{ color: "var(--ok)", fontSize: 15, lineHeight: 1.5 }}>
               ✅ {pendingMessage}
             </div>
@@ -164,12 +164,12 @@ export default function Register() {
                 emptyLabel={units.length === 0 ? "Belum ada unit terdaftar" : null}
               />
               <input
-                className="field-input"
+                className="field-input mt-8"
                 value={newUnitName}
                 onChange={function (e) { setNewUnitName(e.target.value); }}
                 placeholder="Atau ketik nomor unit baru, misal HD-07"
-                style={{ marginTop: 8 }}
-              />
+
+ />
               <div className="field-hint">Pilih salah satu: dari daftar di atas, atau ketik nomor unit baru kalau belum terdaftar.</div>
             </div>
           )}

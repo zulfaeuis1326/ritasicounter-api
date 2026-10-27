@@ -1,15 +1,15 @@
 import Head from "next/head";
-import Script from "next/script";
-import { useRouter } from "next/router";
-import "../styles/globals.css";
-import ThemeToggle from "../components/ThemeToggle";
+import "../styles/base.css";
+import "../styles/components.css";
+import "../styles/auth.css";
+import "../styles/layout.css";
+import "../styles/panels.css";
+import "../styles/display.css";
+import "../styles/extras.css";
+import "../styles/tweaks.css";
+import "../styles/utilities.css";
 
 export default function App({ Component, pageProps }) {
-  const router = useRouter();
-  // Halaman utama (V4) punya tombol tema sendiri di Topbar, jadi tombol
-  // melayang global disembunyikan di situ biar gak dobel.
-  const hideFloatingToggle = router.pathname === "/";
-
   return (
     <>
       <Head>
@@ -21,18 +21,6 @@ export default function App({ Component, pageProps }) {
           rel="stylesheet"
         />
       </Head>
-      <Script id="theme-init" strategy="beforeInteractive">
-        {`
-          try {
-            var saved = window.localStorage.getItem("ritasi-theme");
-            var theme = (saved === "dark" || saved === "light") ? saved : "light";
-            document.documentElement.setAttribute("data-theme", theme);
-          } catch (err) {
-            document.documentElement.setAttribute("data-theme", "light");
-          }
-        `}
-      </Script>
-      {!hideFloatingToggle && <ThemeToggle />}
       <Component {...pageProps} />
     </>
   );

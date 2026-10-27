@@ -2,6 +2,7 @@ const { pool, ensureSchema } = require("../../../lib/db");
 const { getUserFromReq } = require("../../../lib/auth");
 const { atLeast, ALL_ROLES } = require("../../../lib/roles");
 const { logActivity } = require("../../../lib/activity");
+const { hashPassword } = require("../../../lib/auth");
 
 export default async function handler(req, res) {
   try {
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      // action: "reset_unit" (default), "set_role", "set_unit", "delete_user",
+      // action: "reset_unit" (default), "reset_password", "set_role", "set_unit", "delete_user",
       // "approve", "reject", atau "revoke_sessions"
       const { userId, action, newRole } = req.body || {};
       if (!userId) return res.status(400).json({ error: "userId wajib diisi" });
@@ -61,6 +62,26 @@ export default async function handler(req, res) {
         }
         await pool.query(`UPDATE users SET token_version = token_version + 1 WHERE id = $1`, [userId]);
         await logActivity(user.id, "revoke_sessions", { userId, username: targetRes.rows[0].username });
+        return res.status(200).json({ ok: true });
+      }
+
+      if (action === "reset_password") {
+        const { newPassword } = req.body || {};
+        if (typeof newPassword !== "string" || newPassword.length < 8) {
+          return res.status(400).json({ error: "Password baru minimal 8 karakter" });
+        }
+        const targetRes = await pool.query(`SELECT username, role FROM users WHERE id = $1`, [userId]);
+        if (targetRes.rows.length === 0) return res.status(404).json({ error: "Akun tidak ditemukan" });
+        const targetRole = targetRes.rows[0].role;
+        if (user.role === "admin" && (targetRole === "admin" || targetRole === "superadmin")) {
+          return res.status(403).json({ error: "Hanya superadmin yang bisa reset password admin/superadmin" });
+        }
+        // token_version dinaikkan: semua sesi lama akun ini otomatis keluar.
+        await pool.query(
+          `UPDATE users SET password_hash = $1, token_version = token_version + 1 WHERE id = $2`,
+          [hashPassword(newPassword), userId]
+        );
+        await logActivity(user.id, "reset_password", { userId, username: targetRes.rows[0].username });
         return res.status(200).json({ ok: true });
       }
 

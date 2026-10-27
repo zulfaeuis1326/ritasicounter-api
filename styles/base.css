@@ -1,0 +1,164 @@
+* { box-sizing: border-box; }
+
+/* Default (belum ada data-theme attribute, atau data-theme="light")
+   Identitas: oranye hazard/safety (warna tambang beneran) sebagai aksen utama --
+   SAMA dengan tema dark, bukan ganti ke biru generik kayak sebelumnya. Background
+   nuansa stone/concrete hangat, bukan abu-abu-biru dingin khas template SaaS. */
+:root,
+[data-theme="light"] {
+  --bg: #f4efe1;
+  --surface: #fffdf9;
+  --surface-alt: #ece2cb;
+  --border: #ddcfab;
+  --text: #241f15;
+  --text-muted: #7a7158;
+
+  --accent: #ef8a00;
+  --accent-strong: #c96b00;
+  --accent-2: #0f8b8d;
+  --accent-2-strong: #0a6668;
+  --accent-2-soft: rgba(15, 139, 141, 0.12);
+  --danger: #e2402b;
+  --ok: #2f9e52;
+
+  --mat-ob: #8b6a4e;
+  --mat-coal: #4a4e57;
+  --mat-soil: #b98249;
+  --mat-solu: #2f6fb0;
+  --mat-mud: #6b6148;
+  --stripe-alt: #241f15;
+  --accent-contrast: #fffaf0;
+  --accent-gradient-end: #c96b00;
+  --accent-shadow: #8a4a00;
+  --btn-disabled-bg: #d6c9a8;
+  --accent-soft: rgba(239, 138, 0, 0.14);
+  --accent-glow: rgba(239, 138, 0, 0.4);
+  --ok-soft: rgba(47, 158, 82, 0.10);
+  --danger-soft: rgba(226, 64, 43, 0.08);
+  --amber: #b8780a;
+  --amber-soft: rgba(184, 120, 10, 0.12);
+
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+body {
+  margin: 0;
+  overflow-x: hidden;
+  width: 100%;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 14px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Signature element: kartu header dibingkai motif garis diagonal amber/hitam,
+   khas rambu keselamatan alat berat tambang -- dipakai sekali saja. */
+.header-card {
+  text-align: center;
+  border-top: none;
+  position: relative;
+  padding-top: 22px;
+  overflow: hidden;
+}
+
+.header-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--accent),
+    var(--accent) 10px,
+    var(--stripe-alt) 10px,
+    var(--stripe-alt) 20px
+  );
+}
+
+.app-logo {
+  display: block;
+  max-height: 56px;
+  width: auto;
+  max-width: 70%;
+  margin: 0 auto 10px auto;
+  object-fit: contain;
+}
+
+.clock {
+  font-family: var(--font-mono);
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 1px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px var(--accent-glow);
+}
+
+.shift-label {
+  text-align: center;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+select, .unit-select, input[type="text"], input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  color: var(--text);
+  font-size: 16px;
+  font-family: var(--font-body);
+  margin-bottom: 10px;
+}
+
+select:focus, input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
