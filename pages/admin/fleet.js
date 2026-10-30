@@ -1,36 +1,50 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { atLeast } from "../../lib/roles";
-import Combobox from "../../components/Combobox";
 import Topbar from "../../components/home/Topbar";
 
-function ChevronIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
+const KEEP = "__keep";   // pilihan "jangan diubah"
+const NONE = "__none";   // pilihan "lepas / kosongkan"
+const TABS = [["hd", "Penempatan HD"], ["pc", "PC / Loader"], ["pit", "Lokasi (PIT)"], ["add", "Tambah HD"]];
+
+async function api(method, url, body) {
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Error " + res.status);
+  return data;
 }
 
 export default function KelolaFleet() {
   const router = useRouter();
   const [authUser, setAuthUser] = useState(undefined);
+  const [tab, setTab] = useState("hd");
   const [fleets, setFleets] = useState([]);
   const [units, setUnits] = useState([]);
   const [pits, setPits] = useState([]);
-  const [error, setError] = useState(null);
+  const [banner, setBanner] = useState(null); // { type: "ok" | "warn" | "error", text }
+  const [saving, setSaving] = useState(false);
 
-  const [selectedUnitId, setSelectedUnitId] = useState("");
-  const [draftFleetId, setDraftFleetId] = useState("");
-  const [draftPitId, setDraftPitId] = useState("");
-  const [savingAssign, setSavingAssign] = useState(false);
-  const [savedMsg, setSavedMsg] = useState(false);
-
-  const [showAddPit, setShowAddPit] = useState(false);
-  const [showAddPc, setShowAddPc] = useState(false);
-  const [newPitName, setNewPitName] = useState("");
+  // tab Penempatan HD
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [selected, setSelected] = useState({});
+  const [pcChoice, setPcChoice] = useState(KEEP);
+  const [pitChoice, setPitChoice] = useState(KEEP);
+  const [followPit, setFollowPit] = useState(true);
+  // tab PC
+  const [fleetPitDraft, setFleetPitDraft] = useState({});
   const [newFleetName, setNewFleetName] = useState("");
   const [newFleetPit, setNewFleetPit] = useState("");
+  // tab PIT
+  const [newPitName, setNewPitName] = useState("");
+  // tab Tambah HD
+  const [bulkNames, setBulkNames] = useState("");
+  const [addFleet, setAddFleet] = useState("");
+  const [addPit, setAddPit] = useState("");
 
   useEffect(() => {
     fetch("/api/auth/me", { cache: "no-store" })
@@ -43,261 +57,263 @@ export default function KelolaFleet() {
       .catch(() => router.push("/login"));
   }, [router]);
 
+  // Muat ulang dari database. Mengembalikan daftar unit terbaru (dipakai untuk memeriksa hasil simpan).
   const loadAll = useCallback(async () => {
-    try {
-      const [fRes, uRes, pRes] = await Promise.all([
-        fetch("/api/fleets"),
-        fetch("/api/units"),
-        fetch("/api/pits"),
-      ]);
-      if (fRes.ok) setFleets(await fRes.json());
-      if (uRes.ok) setUnits(await uRes.json());
-      if (pRes.ok) setPits(await pRes.json());
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
+    const [f, u, p] = await Promise.all([api("GET", "/api/fleets"), api("GET", "/api/units"), api("GET", "/api/pits")]);
+    setFleets(f); setUnits(u); setPits(p);
+    return u;
   }, []);
 
   useEffect(() => {
-    if (authUser) loadAll();
+    if (authUser) loadAll().catch((e) => setBanner({ type: "error", text: "Gagal memuat data: " + e.message }));
   }, [authUser, loadAll]);
 
-  useEffect(() => {
-    const u = units.find((x) => String(x.id) === selectedUnitId) || null;
-    setDraftFleetId(u && u.fleet_id ? String(u.fleet_id) : "");
-    setDraftPitId(u && u.pit_id ? String(u.pit_id) : "");
-    setSavedMsg(false);
-  }, [selectedUnitId, units]);
-
-  async function handleAddPit(e) {
-    e.preventDefault();
-    if (!newPitName.trim()) return;
-    try {
-      const res = await fetch("/api/pits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newPitName.trim() }),
-      });
-      if (res.ok) {
-        setNewPitName("");
-        setShowAddPit(false);
-        await loadAll();
-      } else {
-        const d = await res.json().catch(() => ({}));
-        alert(`Gagal tambah lokasi: ${d.error || res.status}`);
-      }
-    } catch (err) {
-      alert(`Gagal tambah lokasi (koneksi/server bermasalah): ${err.message}`);
-    }
-  }
-
-  async function handleAddFleet(e) {
-    e.preventDefault();
-    if (!newFleetName.trim()) return;
-    try {
-      const res = await fetch("/api/fleets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newFleetName.trim(), pitId: newFleetPit || null }),
-      });
-      if (res.ok) {
-        setNewFleetName("");
-        setNewFleetPit("");
-        setShowAddPc(false);
-        await loadAll();
-      } else {
-        const d = await res.json().catch(() => ({}));
-        alert(`Gagal tambah PC: ${d.error || res.status}`);
-      }
-    } catch (err) {
-      alert(`Gagal tambah PC (koneksi/server bermasalah): ${err.message}`);
-    }
-  }
-
-  async function handleAssignFleet(unitId, fleetId) {
-    try {
-      const res = await fetch("/api/units", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "assign_fleet", unitId, fleetId: fleetId || null }),
-      });
-      if (res.ok) await loadAll();
-      else {
-        const d = await res.json().catch(() => ({}));
-        alert(`Gagal assign PC: ${d.error || res.status}`);
-      }
-    } catch (err) {
-      alert(`Gagal assign PC (koneksi/server bermasalah): ${err.message}`);
-    }
-  }
-
-  async function handleSetUnitPit(unitId, pitId) {
-    try {
-      const res = await fetch("/api/units", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "set_pit", unitId, pitId: pitId || null }),
-      });
-      if (res.ok) await loadAll();
-      else {
-        const d = await res.json().catch(() => ({}));
-        alert(`Gagal ubah lokasi: ${d.error || res.status}`);
-      }
-    } catch (err) {
-      alert(`Gagal ubah lokasi (koneksi/server bermasalah): ${err.message}`);
-    }
-  }
-
-  async function handleSaveAssign() {
-    if (!selectedUnit) return;
-    setSavingAssign(true);
-    setSavedMsg(false);
-    try {
-      const fleetChanged = draftFleetId !== (selectedUnit.fleet_id ? String(selectedUnit.fleet_id) : "");
-      const pitChanged = draftPitId !== (selectedUnit.pit_id ? String(selectedUnit.pit_id) : "");
-      if (fleetChanged) await handleAssignFleet(selectedUnit.id, draftFleetId);
-      if (pitChanged) await handleSetUnitPit(selectedUnit.id, draftPitId);
-      setSavedMsg(true);
-    } finally {
-      setSavingAssign(false);
-    }
-  }
-
   if (authUser === undefined || authUser === null) {
-    return (
-      <div className="container">
-        <div className="card"><div className="hint">Memuat...</div></div>
-      </div>
-    );
+    return <div className="container"><div className="card"><div className="hint">Memuat...</div></div></div>;
   }
-
-  const unitOptions = units.map((u) => ({
-    value: String(u.id),
-    label: `${u.name}${u.fleet_name ? " → " + u.fleet_name : ""}${u.pit_name ? " (" + u.pit_name + ")" : ""}`,
-  }));
-  const fleetOptions = fleets.map((f) => ({ value: String(f.id), label: f.name }));
-  const pitOptions = pits.map((p) => ({ value: String(p.id), label: p.name }));
-
-  const selectedUnit = units.find((u) => String(u.id) === selectedUnitId) || null;
-
   const isAdmin = atLeast(authUser.role, "admin");
-  const canMonitorAll = atLeast(authUser.role, "pengawas");
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/login";
   }
+  const fail = (e) => setBanner({ type: "error", text: "Gagal menyimpan: " + e.message });
+
+  // ---------- Penempatan HD ----------
+  const q = search.trim().toLowerCase();
+  const shown = units.filter((u) =>
+    (!q || u.name.toLowerCase().includes(q) || (u.fleet_name || "").toLowerCase().includes(q)) &&
+    (filter === "all" || (filter === "nofleet" && !u.fleet_id) || (filter === "nopit" && !u.pit_id))
+  );
+  const selIds = Object.keys(selected).filter((k) => selected[k]).map(Number);
+  const allShownSelected = shown.length > 0 && shown.every((u) => selected[u.id]);
+
+  function toggleAllShown() {
+    const next = { ...selected };
+    shown.forEach((u) => { next[u.id] = !allShownSelected; });
+    setSelected(next);
+  }
+
+  async function saveAssign() {
+    const setFleet = pcChoice !== KEEP;
+    const fleetId = pcChoice === NONE || !setFleet ? null : Number(pcChoice);
+    let setPit = pitChoice !== KEEP;
+    let pitId = pitChoice === NONE || !setPit ? null : Number(pitChoice);
+    // HD yang dimasukkan ke PC otomatis ikut PIT milik PC itu (kecuali PIT dipilih sendiri)
+    if (setFleet && fleetId && !setPit && followPit) {
+      const f = fleets.find((x) => x.id === fleetId);
+      if (f && f.pit_id) { setPit = true; pitId = f.pit_id; }
+    }
+    if (!setFleet && !setPit) { setBanner({ type: "error", text: "Pilih PC atau lokasi tujuan dulu." }); return; }
+    setSaving(true);
+    try {
+      const r = await api("POST", "/api/units", { action: "bulk_assign", unitIds: selIds, setFleet, fleetId, setPit, pitId });
+      const fresh = await loadAll(); // baca ulang dari database untuk membuktikan data benar-benar tersimpan
+      const cocok = selIds.every((id) => {
+        const u = fresh.find((x) => x.id === id);
+        return u && (!setFleet || (u.fleet_id || null) === fleetId) && (!setPit || (u.pit_id || null) === pitId);
+      });
+      setBanner(cocok
+        ? { type: "ok", text: "Tersimpan di database: " + r.updated + " unit diperbarui dan sudah dicek ulang." }
+        : { type: "warn", text: "Server menjawab sukses, tapi sebagian data belum sesuai. Muat ulang halaman dan cek lagi." });
+      setSelected({}); setPcChoice(KEEP); setPitChoice(KEEP);
+    } catch (e) { fail(e); } finally { setSaving(false); }
+  }
+
+  // ---------- PC / Loader ----------
+  async function saveFleetPit(f) {
+    const val = fleetPitDraft[f.id];
+    setSaving(true);
+    try {
+      await api("POST", "/api/fleets", { action: "set_pit", fleetId: f.id, pitId: val === NONE ? null : Number(val) });
+      await loadAll();
+      setFleetPitDraft((p) => { const n = { ...p }; delete n[f.id]; return n; });
+      setBanner({ type: "ok", text: "Lokasi PC " + f.name + " tersimpan di database." });
+    } catch (e) { fail(e); } finally { setSaving(false); }
+  }
+  async function addNewFleet(e) {
+    e.preventDefault();
+    if (!newFleetName.trim()) return;
+    setSaving(true);
+    try {
+      await api("POST", "/api/fleets", { name: newFleetName.trim(), pitId: newFleetPit ? Number(newFleetPit) : null });
+      await loadAll();
+      setBanner({ type: "ok", text: "PC " + newFleetName.trim() + " tersimpan di database." });
+      setNewFleetName(""); setNewFleetPit("");
+    } catch (err) { fail(err); } finally { setSaving(false); }
+  }
+
+  // ---------- PIT ----------
+  async function addNewPit(e) {
+    e.preventDefault();
+    if (!newPitName.trim()) return;
+    setSaving(true);
+    try {
+      await api("POST", "/api/pits", { name: newPitName.trim() });
+      await loadAll();
+      setBanner({ type: "ok", text: "Lokasi " + newPitName.trim().toUpperCase() + " tersimpan di database." });
+      setNewPitName("");
+    } catch (err) { fail(err); } finally { setSaving(false); }
+  }
+
+  // ---------- Tambah HD ----------
+  async function addUnits(e) {
+    e.preventDefault();
+    const names = bulkNames.split("\n").map((n) => n.trim()).filter(Boolean);
+    if (names.length === 0) return;
+    setSaving(true);
+    try {
+      const r = await api("POST", "/api/units", {
+        action: "create_many", names,
+        fleetId: addFleet ? Number(addFleet) : null, pitId: addPit ? Number(addPit) : null,
+      });
+      await loadAll();
+      const skip = r.skipped.length ? " Sudah ada (dilewati): " + r.skipped.join(", ") + "." : "";
+      setBanner({ type: r.created > 0 ? "ok" : "warn", text: r.created + " unit baru tersimpan di database." + skip });
+      setBulkNames("");
+    } catch (err) { fail(err); } finally { setSaving(false); }
+  }
+
+  const noFleet = units.filter((u) => !u.fleet_id).length;
+  const noPit = units.filter((u) => !u.pit_id).length;
+  const pitSelect = (value, onChange, keepLabel) => (
+    <select className="field-input" value={value} onChange={(e) => onChange(e.target.value)}>
+      {keepLabel && <option value={KEEP}>{keepLabel}</option>}
+      <option value={keepLabel ? NONE : ""}>{keepLabel ? "-- Kosongkan lokasi --" : "-- Tanpa lokasi --"}</option>
+      {pits.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+    </select>
+  );
 
   return (
     <div className="v4-page">
-      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="fleet" />
-
+      <Topbar authUser={authUser} canMonitorAll={true} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="fleet" />
       <main className="container">
-      {error && (
-        <div className="card"><div className="hint c-danger" >Error: {error}</div></div>
-      )}
+        <div className="fl-summary">
+          <div><b>{units.length}</b><span>HD</span></div>
+          <div><b>{fleets.length}</b><span>PC</span></div>
+          <div><b>{pits.length}</b><span>Lokasi</span></div>
+          <div className={noFleet ? "fl-warn" : ""}><b>{noFleet}</b><span>HD tanpa PC</span></div>
+          <div className={noPit ? "fl-warn" : ""}><b>{noPit}</b><span>HD tanpa lokasi</span></div>
+        </div>
 
-      <div className="card">
-        <div className="section-title">Unit Hauler → Masuk PC Berapa, Lokasi Mana</div>
-        <div className="field-label mb-6" >Unit</div>
-        <Combobox
-          value={selectedUnitId}
-          onChange={setSelectedUnitId}
-          options={unitOptions}
-          placeholder="Cari unit, misal H572..."
-        />
+        <div className="catat-chips">
+          {TABS.filter(([k]) => k !== "add" || isAdmin).map(([k, label]) => (
+            <button key={k} className={"chip" + (tab === k ? " active" : "")} onClick={() => { setTab(k); setBanner(null); }}>{label}</button>
+          ))}
+        </div>
 
-        {selectedUnit && (
-          <div className="fleet-detail-panel">
-            <div className="fleet-detail-title">{selectedUnit.name}</div>
+        {banner && <div className={"fl-banner fl-banner-" + banner.type} role="status">{banner.type === "ok" ? "✓ " : ""}{banner.text}</div>}
 
-            <div className="field-label mb-6" >Masuk PC (Fleet)</div>
-            <Combobox
-              value={draftFleetId}
-              onChange={setDraftFleetId}
-              options={fleetOptions}
-              placeholder="Cari PC, misal E520..."
-              emptyLabel="-- Belum gabung PC --"
-            />
-
-            <div className="field-label mb-6 mt-12" >Lokasi (PIT)</div>
-            <Combobox
-              value={draftPitId}
-              onChange={setDraftPitId}
-              options={pitOptions}
-              placeholder="Cari lokasi..."
-              emptyLabel="-- Belum ada lokasi --"
-            />
-
-            <button
-              className="btn btn-primary mt-14"
-
-              onClick={handleSaveAssign}
-              disabled={savingAssign}
- >
-              {savingAssign ? "Menyimpan..." : "Simpan"}
-            </button>
-            {savedMsg && !savingAssign && (
-              <div className="hint" style={{ color: "var(--ok)", marginTop: 8 }}>Tersimpan ✓</div>
-            )}
+        {tab === "hd" && (
+          <div className="card">
+            <h2 className="sec-title-icon">Penempatan HD</h2>
+            <div className="hint mb-8">Centang satu atau banyak HD, pilih PC dan/atau lokasi tujuan di bawah, lalu tekan Simpan.</div>
+            <input className="field-input mb-8" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari HD atau nama PC..." />
+            <div className="catat-chips">
+              {[["all", "Semua (" + units.length + ")"], ["nofleet", "Belum ada PC (" + noFleet + ")"], ["nopit", "Belum ada lokasi (" + noPit + ")"]].map(([k, label]) => (
+                <button key={k} className={"chip" + (filter === k ? " active" : "")} onClick={() => setFilter(k)}>{label}</button>
+              ))}
+            </div>
+            <label className="wa-check"><input type="checkbox" checked={allShownSelected} onChange={toggleAllShown} /> Pilih semua yang tampil ({shown.length})</label>
+            {shown.map((u) => (
+              <label key={u.id} className="fl-row">
+                <input type="checkbox" checked={!!selected[u.id]} onChange={(e) => setSelected({ ...selected, [u.id]: e.target.checked })} />
+                <span className="fl-name">{u.name}</span>
+                <span className={"fl-badge" + (u.fleet_name ? "" : " fl-badge-empty")}>{u.fleet_name || "tanpa PC"}</span>
+                <span className={"fl-badge" + (u.pit_name ? "" : " fl-badge-empty")}>{u.pit_name || "tanpa lokasi"}</span>
+              </label>
+            ))}
+            {shown.length === 0 && <div className="hint">Tidak ada HD yang cocok.{isAdmin ? " Tambahkan lewat tab Tambah HD." : ""}</div>}
           </div>
         )}
-      </div>
 
-      <div className="card">
-        <button className="add-toggle-btn" onClick={() => setShowAddPc(!showAddPc)}>
-          <span>+ Tambah PC / Loader Baru</span>
-          <span className={"add-toggle-chevron" + (showAddPc ? " add-toggle-chevron-open" : "")}>
-            <ChevronIcon />
-          </span>
-        </button>
-        {showAddPc && (
-          <form onSubmit={handleAddFleet} className="add-form">
-            <div className="field-label mb-6" >Nama PC</div>
-            <input
-              className="field-input mb-12"
-              value={newFleetName}
-              onChange={(e) => setNewFleetName(e.target.value)}
-              placeholder="Contoh: E52099"
+        {tab === "pc" && (
+          <>
+            <div className="card">
+              <h2 className="sec-title-icon">PC / Loader</h2>
+              {fleets.map((f) => {
+                const draft = fleetPitDraft[f.id];
+                const value = draft !== undefined ? draft : (f.pit_id ? String(f.pit_id) : "");
+                const members = units.filter((u) => u.fleet_id === f.id).length;
+                return (
+                  <div key={f.id} className="fl-pcrow">
+                    <div className="fl-name">{f.name} <span className="fl-badge">{members} HD</span></div>
+                    {pitSelect(value, (v) => setFleetPitDraft({ ...fleetPitDraft, [f.id]: v === "" ? NONE : v }), null)}
+                    {draft !== undefined && (
+                      <button className="btn btn-primary mt-8" disabled={saving} onClick={() => saveFleetPit(f)}>{saving ? "Menyimpan..." : "Simpan lokasi " + f.name}</button>
+                    )}
+                  </div>
+                );
+              })}
+              {fleets.length === 0 && <div className="hint">Belum ada PC. Tambahkan di bawah.</div>}
+            </div>
+            <form className="card" onSubmit={addNewFleet}>
+              <h2 className="sec-title-icon">Tambah PC / Loader</h2>
+              <div className="field-label mb-6">Nama PC</div>
+              <input className="field-input mb-12" value={newFleetName} onChange={(e) => setNewFleetName(e.target.value)} placeholder="Contoh: E52099" />
+              <div className="field-label mb-6">Lokasi (PIT)</div>
+              {pitSelect(newFleetPit, setNewFleetPit, null)}
+              <button className="auth-submit mt-12" disabled={saving || !newFleetName.trim()}>{saving ? "Menyimpan..." : "Simpan PC"}</button>
+            </form>
+          </>
+        )}
 
- />
-            <div className="field-label mb-6" >Lokasi (PIT)</div>
-            <Combobox
-              value={newFleetPit}
-              onChange={setNewFleetPit}
-              options={pitOptions}
-              placeholder="Cari lokasi..."
-              emptyLabel="-- Tanpa lokasi dulu --"
-            />
-            <button className="auth-submit mt-12" >Simpan PC</button>
+        {tab === "pit" && (
+          <>
+            <div className="card">
+              <h2 className="sec-title-icon">Lokasi (PIT)</h2>
+              {pits.map((p) => (
+                <div key={p.id} className="fl-row">
+                  <span className="fl-name">{p.name}</span>
+                  <span className="fl-badge">{fleets.filter((f) => f.pit_id === p.id).length} PC</span>
+                  <span className="fl-badge">{units.filter((u) => u.pit_id === p.id).length} HD</span>
+                </div>
+              ))}
+            </div>
+            <form className="card" onSubmit={addNewPit}>
+              <h2 className="sec-title-icon">Tambah Lokasi</h2>
+              <input className="field-input mb-12" value={newPitName} onChange={(e) => setNewPitName(e.target.value)} placeholder="Contoh: PIT BARU" />
+              <button className="auth-submit" disabled={saving || !newPitName.trim()}>{saving ? "Menyimpan..." : "Simpan Lokasi"}</button>
+            </form>
+          </>
+        )}
+
+        {tab === "add" && isAdmin && (
+          <form className="card" onSubmit={addUnits}>
+            <h2 className="sec-title-icon">Tambah HD</h2>
+            <div className="hint mb-8">Satu nama per baris. Nama yang sudah ada otomatis dilewati.</div>
+            <textarea className="field-input mb-12" rows={6} value={bulkNames} onChange={(e) => setBulkNames(e.target.value)} placeholder={"HD-101\nHD-102\nHD-103"} />
+            <div className="field-label mb-6">Langsung masukkan ke PC (opsional)</div>
+            <select className="field-input mb-12" value={addFleet} onChange={(e) => setAddFleet(e.target.value)}>
+              <option value="">-- Tanpa PC --</option>
+              {fleets.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+            </select>
+            <div className="field-label mb-6">Lokasi (opsional)</div>
+            {pitSelect(addPit, setAddPit, null)}
+            <button className="auth-submit mt-12" disabled={saving || !bulkNames.trim()}>{saving ? "Menyimpan..." : "Simpan Unit"}</button>
           </form>
         )}
-      </div>
 
-      <div className="card">
-        <button className="add-toggle-btn" onClick={() => setShowAddPit(!showAddPit)}>
-          <span>+ Tambah Lokasi Baru</span>
-          <span className={"add-toggle-chevron" + (showAddPit ? " add-toggle-chevron-open" : "")}>
-            <ChevronIcon />
-          </span>
-        </button>
-        {showAddPit && (
-          <form onSubmit={handleAddPit} className="add-form">
-            <input
-              className="field-input mb-12"
-              value={newPitName}
-              onChange={(e) => setNewPitName(e.target.value)}
-              placeholder="Contoh: PIT BARU"
-
- />
-            <button className="auth-submit">Simpan Lokasi</button>
-          </form>
-        )}
-      </div>
-
-      <div className="app-footer">designed by Najib.dev</div>
+        <div className="app-footer">designed by Najib.dev</div>
       </main>
+
+      {tab === "hd" && selIds.length > 0 && (
+        <div className="fl-actionbar">
+          <div className="fl-actionbar-title">{selIds.length} HD dipilih</div>
+          <div className="fl-actionbar-row">
+            <select className="field-input" value={pcChoice} onChange={(e) => setPcChoice(e.target.value)}>
+              <option value={KEEP}>PC: jangan diubah</option>
+              <option value={NONE}>PC: lepas dari PC</option>
+              {fleets.map((f) => <option key={f.id} value={f.id}>PC: {f.name}</option>)}
+            </select>
+            {pitSelect(pitChoice, setPitChoice, "Lokasi: jangan diubah")}
+          </div>
+          {pcChoice !== KEEP && pcChoice !== NONE && pitChoice === KEEP && (
+            <label className="wa-check"><input type="checkbox" checked={followPit} onChange={(e) => setFollowPit(e.target.checked)} /> Ikuti lokasi milik PC</label>
+          )}
+          <button className="btn btn-primary" disabled={saving} onClick={saveAssign}>{saving ? "Menyimpan..." : "Simpan Penempatan"}</button>
+        </div>
+      )}
     </div>
   );
 }
