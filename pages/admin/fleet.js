@@ -1,0 +1,303 @@
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/router";
+import { atLeast } from "../../lib/roles";
+import Combobox from "../../components/Combobox";
+import Topbar from "../../components/home/Topbar";
+
+function ChevronIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+export default function KelolaFleet() {
+  const router = useRouter();
+  const [authUser, setAuthUser] = useState(undefined);
+  const [fleets, setFleets] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [pits, setPits] = useState([]);
+  const [error, setError] = useState(null);
+
+  const [selectedUnitId, setSelectedUnitId] = useState("");
+  const [draftFleetId, setDraftFleetId] = useState("");
+  const [draftPitId, setDraftPitId] = useState("");
+  const [savingAssign, setSavingAssign] = useState(false);
+  const [savedMsg, setSavedMsg] = useState(false);
+
+  const [showAddPit, setShowAddPit] = useState(false);
+  const [showAddPc, setShowAddPc] = useState(false);
+  const [newPitName, setNewPitName] = useState("");
+  const [newFleetName, setNewFleetName] = useState("");
+  const [newFleetPit, setNewFleetPit] = useState("");
+
+  useEffect(() => {
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((d) => {
+        if (!d.user) router.push("/login");
+        else if (!atLeast(d.user.role, "pengawas")) router.push("/");
+        else setAuthUser(d.user);
+      })
+      .catch(() => router.push("/login"));
+  }, [router]);
+
+  const loadAll = useCallback(async () => {
+    try {
+      const [fRes, uRes, pRes] = await Promise.all([
+        fetch("/api/fleets"),
+        fetch("/api/units"),
+        fetch("/api/pits"),
+      ]);
+      if (fRes.ok) setFleets(await fRes.json());
+      if (uRes.ok) setUnits(await uRes.json());
+      if (pRes.ok) setPits(await pRes.json());
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (authUser) loadAll();
+  }, [authUser, loadAll]);
+
+  useEffect(() => {
+    const u = units.find((x) => String(x.id) === selectedUnitId) || null;
+    setDraftFleetId(u && u.fleet_id ? String(u.fleet_id) : "");
+    setDraftPitId(u && u.pit_id ? String(u.pit_id) : "");
+    setSavedMsg(false);
+  }, [selectedUnitId, units]);
+
+  async function handleAddPit(e) {
+    e.preventDefault();
+    if (!newPitName.trim()) return;
+    try {
+      const res = await fetch("/api/pits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newPitName.trim() }),
+      });
+      if (res.ok) {
+        setNewPitName("");
+        setShowAddPit(false);
+        await loadAll();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal tambah lokasi: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal tambah lokasi (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleAddFleet(e) {
+    e.preventDefault();
+    if (!newFleetName.trim()) return;
+    try {
+      const res = await fetch("/api/fleets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newFleetName.trim(), pitId: newFleetPit || null }),
+      });
+      if (res.ok) {
+        setNewFleetName("");
+        setNewFleetPit("");
+        setShowAddPc(false);
+        await loadAll();
+      } else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal tambah PC: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal tambah PC (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleAssignFleet(unitId, fleetId) {
+    try {
+      const res = await fetch("/api/units", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "assign_fleet", unitId, fleetId: fleetId || null }),
+      });
+      if (res.ok) await loadAll();
+      else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal assign PC: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal assign PC (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleSetUnitPit(unitId, pitId) {
+    try {
+      const res = await fetch("/api/units", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "set_pit", unitId, pitId: pitId || null }),
+      });
+      if (res.ok) await loadAll();
+      else {
+        const d = await res.json().catch(() => ({}));
+        alert(`Gagal ubah lokasi: ${d.error || res.status}`);
+      }
+    } catch (err) {
+      alert(`Gagal ubah lokasi (koneksi/server bermasalah): ${err.message}`);
+    }
+  }
+
+  async function handleSaveAssign() {
+    if (!selectedUnit) return;
+    setSavingAssign(true);
+    setSavedMsg(false);
+    try {
+      const fleetChanged = draftFleetId !== (selectedUnit.fleet_id ? String(selectedUnit.fleet_id) : "");
+      const pitChanged = draftPitId !== (selectedUnit.pit_id ? String(selectedUnit.pit_id) : "");
+      if (fleetChanged) await handleAssignFleet(selectedUnit.id, draftFleetId);
+      if (pitChanged) await handleSetUnitPit(selectedUnit.id, draftPitId);
+      setSavedMsg(true);
+    } finally {
+      setSavingAssign(false);
+    }
+  }
+
+  if (authUser === undefined || authUser === null) {
+    return (
+      <div className="container">
+        <div className="card"><div className="hint">Memuat...</div></div>
+      </div>
+    );
+  }
+
+  const unitOptions = units.map((u) => ({
+    value: String(u.id),
+    label: `${u.name}${u.fleet_name ? " → " + u.fleet_name : ""}${u.pit_name ? " (" + u.pit_name + ")" : ""}`,
+  }));
+  const fleetOptions = fleets.map((f) => ({ value: String(f.id), label: f.name }));
+  const pitOptions = pits.map((p) => ({ value: String(p.id), label: p.name }));
+
+  const selectedUnit = units.find((u) => String(u.id) === selectedUnitId) || null;
+
+  const isAdmin = atLeast(authUser.role, "admin");
+  const canMonitorAll = atLeast(authUser.role, "pengawas");
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  }
+
+  return (
+    <div className="v4-page">
+      <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="fleet" />
+
+      <main className="container">
+      {error && (
+        <div className="card"><div className="hint c-danger" >Error: {error}</div></div>
+      )}
+
+      <div className="card">
+        <div className="section-title">Unit Hauler → Masuk PC Berapa, Lokasi Mana</div>
+        <div className="field-label mb-6" >Unit</div>
+        <Combobox
+          value={selectedUnitId}
+          onChange={setSelectedUnitId}
+          options={unitOptions}
+          placeholder="Cari unit, misal H572..."
+        />
+
+        {selectedUnit && (
+          <div className="fleet-detail-panel">
+            <div className="fleet-detail-title">{selectedUnit.name}</div>
+
+            <div className="field-label mb-6" >Masuk PC (Fleet)</div>
+            <Combobox
+              value={draftFleetId}
+              onChange={setDraftFleetId}
+              options={fleetOptions}
+              placeholder="Cari PC, misal E520..."
+              emptyLabel="-- Belum gabung PC --"
+            />
+
+            <div className="field-label mb-6 mt-12" >Lokasi (PIT)</div>
+            <Combobox
+              value={draftPitId}
+              onChange={setDraftPitId}
+              options={pitOptions}
+              placeholder="Cari lokasi..."
+              emptyLabel="-- Belum ada lokasi --"
+            />
+
+            <button
+              className="btn btn-primary mt-14"
+
+              onClick={handleSaveAssign}
+              disabled={savingAssign}
+ >
+              {savingAssign ? "Menyimpan..." : "Simpan"}
+            </button>
+            {savedMsg && !savingAssign && (
+              <div className="hint" style={{ color: "var(--ok)", marginTop: 8 }}>Tersimpan ✓</div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <button className="add-toggle-btn" onClick={() => setShowAddPc(!showAddPc)}>
+          <span>+ Tambah PC / Loader Baru</span>
+          <span className={"add-toggle-chevron" + (showAddPc ? " add-toggle-chevron-open" : "")}>
+            <ChevronIcon />
+          </span>
+        </button>
+        {showAddPc && (
+          <form onSubmit={handleAddFleet} className="add-form">
+            <div className="field-label mb-6" >Nama PC</div>
+            <input
+              className="field-input mb-12"
+              value={newFleetName}
+              onChange={(e) => setNewFleetName(e.target.value)}
+              placeholder="Contoh: E52099"
+
+ />
+            <div className="field-label mb-6" >Lokasi (PIT)</div>
+            <Combobox
+              value={newFleetPit}
+              onChange={setNewFleetPit}
+              options={pitOptions}
+              placeholder="Cari lokasi..."
+              emptyLabel="-- Tanpa lokasi dulu --"
+            />
+            <button className="auth-submit mt-12" >Simpan PC</button>
+          </form>
+        )}
+      </div>
+
+      <div className="card">
+        <button className="add-toggle-btn" onClick={() => setShowAddPit(!showAddPit)}>
+          <span>+ Tambah Lokasi Baru</span>
+          <span className={"add-toggle-chevron" + (showAddPit ? " add-toggle-chevron-open" : "")}>
+            <ChevronIcon />
+          </span>
+        </button>
+        {showAddPit && (
+          <form onSubmit={handleAddPit} className="add-form">
+            <input
+              className="field-input mb-12"
+              value={newPitName}
+              onChange={(e) => setNewPitName(e.target.value)}
+              placeholder="Contoh: PIT BARU"
+
+ />
+            <button className="auth-submit">Simpan Lokasi</button>
+          </form>
+        )}
+      </div>
+
+      <div className="app-footer">designed by Najib.dev</div>
+      </main>
+    </div>
+  );
+}
