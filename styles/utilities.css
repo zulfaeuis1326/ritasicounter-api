@@ -72,3 +72,25 @@
 .wa-check { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 14px; }
 .wa-check input { width: 22px; min-height: 22px; height: 22px; }
 .wa-text { width: 100%; margin: 8px 0 10px; padding: 10px; border: 2px solid var(--text); background: var(--surface); color: var(--text); font: 13px/1.45 var(--font-mono); resize: vertical; }
+
+/* ===== Kelola Fleet (penempatan massal) ===== */
+.fl-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; margin: 0 0 12px; }
+.fl-summary div { padding: 8px 10px; background: var(--surface); border: 2px solid var(--text); }
+.fl-summary b { display: block; font: 700 22px var(--font-mono); }
+.fl-summary span { font-size: 11px; color: var(--text-muted); }
+.fl-summary .fl-warn { background: var(--amber-soft); border-color: var(--amber); }
+.fl-banner { margin: 0 0 12px; padding: 12px 14px; border: 2px solid var(--text); font-weight: 600; }
+.fl-banner-ok { background: #e3f4e8; border-color: var(--ok); color: #1f6b3a; }
+.fl-banner-warn { background: var(--amber-soft); border-color: var(--amber); }
+.fl-banner-error { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+.fl-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 8px 4px; border-top: 1px solid var(--border); cursor: pointer; }
+.fl-row input[type=checkbox] { width: 22px; height: 22px; flex: none; }
+.fl-name { flex: 1; min-width: 90px; font-weight: 700; }
+.fl-badge { padding: 3px 8px; background: var(--surface-alt); border: 1px solid var(--border); font: 600 12px var(--font-mono); }
+.fl-badge-empty { background: transparent; color: var(--text-muted); border-style: dashed; }
+.fl-pcrow { padding: 12px 0; border-top: 1px solid var(--border); }
+.fl-pcrow .fl-name { margin-bottom: 6px; }
+.fl-actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 4px solid var(--accent); box-shadow: 0 -4px 16px rgba(36, 31, 21, 0.18); display: flex; flex-direction: column; gap: 8px; }
+.fl-actionbar-title { font: 700 16px var(--font-display); letter-spacing: 1px; }
+.fl-actionbar-row { display: flex; gap: 8px; }
+.fl-actionbar-row .field-input { flex: 1; min-width: 0; }
