@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { ROLE_LABEL } from "../../lib/roles";
 
 function LogoutIcon() {
@@ -29,6 +30,14 @@ function ScreenIcon() {
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="4" width="20" height="13" rx="2" />
       <line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  );
+}
+function SlidersIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="17" x2="20" y2="17" />
+      <circle cx="9" cy="7" r="2.2" fill="var(--surface)" /><circle cx="15" cy="17" r="2.2" fill="var(--surface)" />
     </svg>
   );
 }
@@ -63,6 +72,15 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
   const [collapsed, setCollapsed] = useState(false);
   const page = currentPage || "input-ritasi";
   const homeLabel = isOperator ? "Input Ritasi" : "Monitoring Ritasi";
+  const router = useRouter();
+  const isPengawas = canMonitorAll && !isAdmin;
+
+  // Pengawas wajib memilih lokasi PIT kerja setiap kali login sebelum memakai aplikasi.
+  useEffect(function () {
+    if (authUser && authUser.role === "pengawas" && !authUser.work_set && router.pathname !== "/pengaturan") {
+      router.replace("/pengaturan?wajib=1");
+    }
+  }, [authUser, router]);
 
   useEffect(function () {
     const saved = window.localStorage.getItem(SIDEBAR_KEY) === "1";
@@ -107,6 +125,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
 
       <nav className="topbar-nav">
         <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
+        <NavItem id="pengaturan" href="/pengaturan" label={isOperator ? "Pengaturan" : "PIT: " + ((authUser && authUser.work_pit_name) || "Semua")} icon={<SlidersIcon />} show={isOperator || isPengawas} />
         <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
         <NavItem id="display" href="/display" label="Display" icon={<ScreenIcon />} show={canMonitorAll} />
