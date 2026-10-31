@@ -1,4 +1,5 @@
 const { pool, ensureSchema } = require("../../lib/db");
+const { cached, clearCache } = require("../../lib/cache");
 const { getOrCreateOpenShift } = require("../../lib/shift");
 const { buildRecap, isHourWithinShift } = require("../../lib/recap");
 const { nowParts, TZ_NAME, OFFSET_HOURS } = require("../../lib/time");
@@ -8,7 +9,7 @@ const { getUserFromReq } = require("../../lib/auth");
 export default async function handler(req, res) {
   try {
     await ensureSchema();
-    const user = await getUserFromReq(req);
+    const user = await getUserFromReq(req, { cache: req.method === "GET" });
     if (!user) return res.status(401).json({ error: "Belum login" });
 
     if (user.role === "operator" && !user.unit_id) {
@@ -77,6 +78,18 @@ export default async function handler(req, res) {
         }
       }
 
+      // Operator yang memilih excavator di Pengaturan: ritasi dicatat atas excavator itu (dan PIT-nya).
+      // Tanpa pilihan, atau excavator sudah nonaktif, pakai PC dan PIT milik unit seperti biasa.
+      let snapFleetId = unitRes.rows[0].fleet_id;
+      let snapPitId = unitRes.rows[0].pit_id;
+      if (!isSupervisor && user.fleet_id) {
+        const fr = await pool.query(`SELECT id, pit_id FROM fleets WHERE id = $1 AND active = true`, [user.fleet_id]);
+        if (fr.rows.length > 0) {
+          snapFleetId = fr.rows[0].id;
+          snapPitId = fr.rows[0].pit_id || snapPitId;
+        }
+      }
+
       const inserted = await pool.query(
         `INSERT INTO ritasi_clicks (unit_id, shift_id, material, jam, operator_id, fleet_id, pit_id, client_request_id, entry_mode)
          SELECT $1::int, $2::int, $3::text, $4::int, $5::int, $6::int, $7::int,
@@ -85,10 +98,12 @@ export default async function handler(req, res) {
          FROM generate_series(1, $10::int) AS g
          ON CONFLICT (client_request_id) WHERE client_request_id IS NOT NULL DO NOTHING
          RETURNING id`,
-        [unitId, shift.id, material, jam, user.id, unitRes.rows[0].fleet_id, unitRes.rows[0].pit_id,
+        [unitId, shift.id, material, jam, user.id, snapFleetId, snapPitId,
          requestId, isSupervisor ? "pengawas" : "operator", qty]
       );
       const duplicate = inserted.rows.length === 0;
+      clearCache("recap:");
+      clearCache("display:");
 
       const recap = await buildRecap(shift.id, lockedUnitId, lockedOperatorId);
       return res
@@ -97,8 +112,12 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "GET") {
-      const shift = await getOrCreateOpenShift();
-      const recap = await buildRecap(shift.id, lockedUnitId, lockedOperatorId);
+      // Cache 2 detik: banyak klien polling data yang sama, cukup dihitung sekali per jendela.
+      const shift = await cached("openshift", 2000, getOrCreateOpenShift);
+      const recap = await cached(
+        `recap:${shift.id}:${lockedUnitId || 0}:${lockedOperatorId || 0}`, 2000,
+        () => buildRecap(shift.id, lockedUnitId, lockedOperatorId)
+      );
       return res.status(200).json({ currentHour: nowParts().hour, tzInfo: `${TZ_NAME} (UTC+${OFFSET_HOURS})`, ...recap });
     }
 
@@ -106,6 +125,6 @@ export default async function handler(req, res) {
     return res.status(405).end();
   } catch (err) {
     console.error("Error di /api/ritasi:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: "Terjadi kesalahan pada server. Coba lagi, atau hubungi admin kalau berulang." });
   }
 }
