@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { startPolling } from "../lib/poll";
 import { useRouter } from "next/router";
 import { atLeast } from "../lib/roles";
 import Topbar from "../components/home/Topbar";
@@ -30,6 +31,7 @@ export default function CatatRitasi() {
   const [busy, setBusy] = useState({});
   const busyRef = useRef({});
   const [notes, setNotes] = useState({});
+  const pitInit = useRef(false);
   const [waOpen, setWaOpen] = useState(false);
   const [waFrom, setWaFrom] = useState("");
   const [waTo, setWaTo] = useState("");
@@ -62,6 +64,14 @@ export default function CatatRitasi() {
     }
   }, []);
 
+  // Awalnya tampilkan PIT tempat pengawas bertugas (masih bisa diganti lewat chip PIT)
+  useEffect(() => {
+    if (authUser && !pitInit.current) {
+      pitInit.current = true;
+      if (authUser.work_pit_name) setPitSel(authUser.work_pit_name);
+    }
+  }, [authUser]);
+
   const loadNotes = useCallback(async () => {
     try {
       const res = await fetch("/api/notes", { cache: "no-store" });
@@ -73,8 +83,7 @@ export default function CatatRitasi() {
     if (!authUser) return;
     loadRecap();
     loadNotes();
-    const t = setInterval(() => { loadRecap(); loadNotes(); }, 8000);
-    return () => clearInterval(t);
+    return startPolling(() => { loadRecap(); loadNotes(); }, 8000);
   }, [authUser, loadRecap, loadNotes]);
 
   async function handleLogout() {
