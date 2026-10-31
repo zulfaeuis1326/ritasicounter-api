@@ -153,7 +153,7 @@
   font-weight: 700;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(180deg, var(--accent-strong), var(--accent-gradient-end));
+  background: var(--accent-strong);
   color: var(--accent-contrast);
   cursor: pointer;
   box-shadow: 0 3px 0 var(--accent-shadow), 0 4px 10px rgba(0, 0, 0, 0.35);

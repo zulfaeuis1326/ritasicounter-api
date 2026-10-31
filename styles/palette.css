@@ -1,0 +1,126 @@
+/* ===== Palet warna "Tambang Modern" =====
+   Hanya WARNA (bentuk, jarak, dan font ada di theme.css dan tidak diubah di sini).
+   Hapus import file ini di pages/_app.js untuk kembali ke warna sebelumnya.
+   Peran warna:  oranye = aksi utama | petrol gelap (ink) = judul & pilihan aktif | teal = informasi & pendukung
+                 biru, terakota, hijau zaitun, mawar = pembeda data (PC, PIT, kartu) | krem & mist = latar */
+:root {
+  --bg: #f4f1ea;
+  --surface: #ffffff;
+  --surface-alt: #eef2ee;
+  --border: #e0e0d4;
+  --text: #14201f;
+  --text-muted: #5d6a68;
+
+  --accent: #f39200;
+  --accent-hi: #ffb02e;
+  --accent-strong: #c76b00;
+  --accent-soft: rgba(243, 146, 0, 0.15);
+  --accent-contrast: #14201f;
+
+  --ink: #0e2f33;
+  --ink-2: #16505a;
+  --accent-2: #0f8b8d;
+  --accent-2-strong: #0a6668;
+  --accent-2-soft: rgba(15, 139, 141, 0.12);
+
+  --ok: #1f9d5b;
+  --danger: #e0432d;
+  --amber: #b8780a;
+
+  --hue-1: #f39200;   /* oranye */
+  --hue-2: #0f8b8d;   /* teal */
+  --hue-3: #2f7fd0;   /* biru */
+  --hue-4: #c2693a;   /* terakota */
+  --hue-5: #7b8f2a;   /* zaitun */
+  --hue-6: #cf4a6b;   /* mawar */
+
+  --mat-ob: #b5733c;
+  --mat-coal: #34495e;
+  --mat-soil: #d9a52b;
+  --mat-solu: #2f7fd0;
+  --mat-mud: #7b8f2a;
+}
+
+/* Latar: krem hangat di atas, mist kehijauan di bawah (halus, tidak menyilaukan) */
+body { background: var(--bg); }
+
+/* Navigasi: garis warna tipis di tepi atas, badge peran berwarna teal */
+.topbar { background: var(--surface); }
+.topbar-role-badge { background: var(--accent-2-soft); color: var(--accent-2-strong); }
+.topbar-nav a:hover { background: var(--accent-2-soft); color: var(--accent-2-strong); }
+
+/* Banner shift */
+.shift-banner { background: var(--accent); }
+.shift-banner-pill { background: rgba(255, 255, 255, 0.4); }
+
+/* Kartu statistik: tiap kartu punya rona sendiri */
+.stat-cards > .card:nth-child(4n + 1) { background: #fff4de; border-color: #f6dcae; }
+.stat-cards > .card:nth-child(4n + 2) { background: #e3f4f3; border-color: #bfe3e1; }
+.stat-cards > .card:nth-child(4n + 3) { background: #e8f1fc; border-color: #c9ddf5; }
+.stat-cards > .card:nth-child(4n + 4) { background: #fdece4; border-color: #f4cdbd; }
+.stat-cards > .card:nth-child(4n + 1) .stat-card-num { color: var(--accent-strong); }
+.stat-cards > .card:nth-child(4n + 2) .stat-card-num { color: var(--accent-2-strong); }
+.stat-cards > .card:nth-child(4n + 3) .stat-card-num { color: var(--hue-3); }
+.stat-cards > .card:nth-child(4n + 4) .stat-card-num { color: var(--hue-4); }
+.stat-card-check.has-idle { background: #fde8e3 !important; border-color: #f2bcb1 !important; }
+.stat-card-check.has-idle .stat-card-num { color: var(--danger) !important; }
+
+/* Tombol: aksi utama oranye bergradasi halus, sekunder teal, WhatsApp hijau */
+.btn-primary, .auth-submit, .tv-btn, .qty-btn { background: var(--accent); color: var(--accent-contrast); }
+.btn-primary:disabled, .auth-submit:disabled { background: var(--btn-disabled-bg); color: var(--text-muted); }
+.btn-secondary, .qty-more { background: var(--accent-2-soft); border-color: rgba(15, 139, 141, 0.35); color: var(--accent-2-strong); }
+.qty-more { border: 0; }
+.wa-btn { background: var(--ok); color: #fff; }
+
+/* Chip & tab: aktif = petrol gelap; chip material punya titik warna dan warna aktif sendiri */
+.chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.catat-label + .catat-chips .chip::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 8px; border-radius: 50%; background: var(--dot); }
+.catat-label + .catat-chips .chip:nth-child(1) { --dot: var(--mat-ob); }
+.catat-label + .catat-chips .chip:nth-child(2) { --dot: var(--mat-coal); }
+.catat-label + .catat-chips .chip:nth-child(3) { --dot: var(--mat-soil); }
+.catat-label + .catat-chips .chip:nth-child(4) { --dot: var(--mat-solu); }
+.catat-label + .catat-chips .chip:nth-child(5) { --dot: var(--mat-mud); }
+.catat-label + .catat-chips .chip.active { background: var(--dot); border-color: var(--dot); color: #fff; }
+.catat-label + .catat-chips .chip.active::before { background: #fff; }
+.catat-label + .catat-chips .chip:nth-child(3).active { color: var(--text); }
+.catat-label + .catat-chips .chip:nth-child(3).active::before { background: var(--text); }
+
+/* Catat Ritasi: header PIT petrol, tiap PC punya warna pengenal */
+.catat-pit { background: var(--ink); }
+.fleet-card { --c: var(--hue-1); box-shadow: inset 4px 0 0 var(--c), var(--shadow-sm); }
+.fleet-card:nth-of-type(6n + 2) { --c: var(--hue-2); }
+.fleet-card:nth-of-type(6n + 3) { --c: var(--hue-3); }
+.fleet-card:nth-of-type(6n + 4) { --c: var(--hue-4); }
+.fleet-card:nth-of-type(6n + 5) { --c: var(--hue-5); }
+.fleet-card:nth-of-type(6n + 6) { --c: var(--hue-6); }
+.fleet-head { background: color-mix(in srgb, var(--c) 8%, #fff); }
+.fleet-head:hover { background: color-mix(in srgb, var(--c) 14%, #fff); }
+.fleet-head .fleet-caret, .fleet-head .fleet-total { color: var(--c); }
+.hauler-name { color: var(--ink); }
+.note-link { color: var(--accent-2-strong); }
+.wa-panel { background: #eaf4f2; border-color: #cfe5e2; }
+
+/* Kelola Fleet: ringkasan berona, lencana teal */
+.fl-summary div:nth-child(5n + 1) { background: #fff4de; border-color: #f6dcae; }
+.fl-summary div:nth-child(5n + 2) { background: #e3f4f3; border-color: #bfe3e1; }
+.fl-summary div:nth-child(5n + 3) { background: #e8f1fc; border-color: #c9ddf5; }
+.fl-summary div:nth-child(5n + 4), .fl-summary div:nth-child(5n + 5) { background: #fdece4; border-color: #f4cdbd; }
+.fl-summary .fl-warn { background: #fff0cf; border-color: rgba(184, 120, 10, 0.5); }
+.fl-badge { background: var(--accent-2-soft); border-color: rgba(15, 139, 141, 0.25); color: var(--accent-2-strong); }
+.fl-badge-empty { background: transparent; border-color: var(--border); color: var(--text-muted); }
+.fl-banner-ok { background: #e2f5ea; border-color: #b4e0c6; border-left-color: var(--ok); color: #17683c; }
+.fl-actionbar { border-top: 4px solid var(--accent); }
+
+/* Tabel, toast, layar TV */
+.list-table th { background: #e4f0ee; color: var(--ink-2); }
+.list-table tbody tr:hover { background: #f1f7f6; }
+.toast { background: var(--ink); }
+.toast-error { background: var(--danger); }
+.toast-action { color: var(--accent-hi); border-color: var(--accent-hi); }
+.pitcards-grand { background: var(--ink); }
+.pitcards-grand-num { color: var(--accent-hi); }
+.pitcards-grid > .pitcard:nth-child(4n + 1) .pitcard-head { background: var(--accent); color: var(--text); }
+.pitcards-grid > .pitcard:nth-child(4n + 2) .pitcard-head { background: var(--hue-2); color: #fff; }
+.pitcards-grid > .pitcard:nth-child(4n + 3) .pitcard-head { background: var(--hue-3); color: #fff; }
+.pitcards-grid > .pitcard:nth-child(4n + 4) .pitcard-head { background: var(--hue-4); color: #fff; }
+.pitcard-fleets b { color: var(--ink); }

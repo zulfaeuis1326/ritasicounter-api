@@ -100,3 +100,83 @@ textarea.field-input { padding-top: 12px; }
 .pitcard { border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow-sm); overflow: hidden; }
 .pitcard-name { font-size: 20px; letter-spacing: -0.01em; }
 .rekap-table .fleet-row { background: var(--surface-alt); }
+
+
+/* ===== Palet warna =====
+   Tiga warna kerja: AMBER (aksi dan sorotan), TEAL (struktur dan info), INK (biru-tinta gelap untuk kontras).
+   Ditambah warna per material dan tint pastel untuk latar kartu. Semua teks di atas warna ini diuji
+   minimal kontras 4,5:1 (teks tinta di atas amber, teks putih di atas tinta/teal gelap). */
+:root {
+  --ink: #1c2434; --ink-2: #0e5a63; --teal: #0f8b8d; --sky: #2f6fb0; --coral: #ef6a2b;
+  --tint-amber: #fff2d9; --tint-teal: #dff3f1; --tint-sky: #e3edfa; --tint-coral: #ffe9df; --tint-green: #e2f4e8;
+}
+body { background: var(--bg); }
+::selection { background: rgba(240, 140, 0, 0.30); }
+
+/* --- Navigasi: garis warna tipis + menu aktif berwarna --- */
+.topbar { position: sticky; }
+.topbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; background: #f5a524; pointer-events: none; }
+@media (min-width: 900px) {
+  .topbar { position: fixed; }
+  .topbar::after { left: auto; top: 0; bottom: 0; right: -1px; width: 3px; height: auto; background: #f5a524; }
+}
+.topbar-nav-current { background: var(--accent); color: var(--ink); }
+.topbar-nav a:hover { background: var(--tint-amber); color: var(--ink); }
+.topbar-role-badge { background: var(--tint-teal); color: var(--ink-2); }
+
+/* --- Banner shift, kartu statistik berwarna, judul bagian --- */
+.shift-banner { background: var(--accent); color: var(--ink); }
+.stat-cards .card:nth-child(1) { background: var(--tint-amber); border-color: #f6d9a6; }
+.stat-cards .card:nth-child(1) .stat-card-num { color: #a85900; }
+.stat-cards .card:nth-child(2) { background: var(--tint-teal); border-color: #bfe3df; }
+.stat-cards .card:nth-child(2) .stat-card-num { color: var(--ink-2); }
+.stat-cards .card:nth-child(3) { background: var(--tint-sky); border-color: #c6d9f0; }
+.stat-cards .card:nth-child(3) .stat-card-num { color: var(--sky); }
+.stat-cards .card.stat-card-check.has-idle { background: var(--tint-coral); border-color: #f6c4ae; }
+.stat-cards .card.stat-card-check.has-idle .stat-card-num { color: #c2410c; }
+.sec-title-icon::before, .section-title::before { content: ""; display: inline-block; width: 5px; height: 18px; margin-right: 10px; border-radius: 3px; background: #f5a524; vertical-align: -3px; }
+
+/* --- Tombol utama berwarna --- */
+.btn-primary, .auth-submit, .tv-btn { background: var(--accent); color: var(--ink); }
+.btn-primary:disabled, .auth-submit:disabled { background: var(--btn-disabled-bg); color: var(--text-muted); }
+.wa-btn { background: #2fb463; color: #fff; }
+.toast { background: var(--ink); }
+
+/* --- Chip: aktif = tinta; chip material punya titik dan warna sendiri --- */
+.chip.active { background: var(--ink); border-color: transparent; color: #fff; }
+.catat-label + .catat-chips .chip::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 8px; border-radius: 50%; background: var(--dot, #999); }
+.catat-label + .catat-chips .chip:nth-child(1) { --dot: var(--mat-ob); }
+.catat-label + .catat-chips .chip:nth-child(2) { --dot: var(--mat-coal); }
+.catat-label + .catat-chips .chip:nth-child(3) { --dot: var(--mat-soil); }
+.catat-label + .catat-chips .chip:nth-child(4) { --dot: var(--mat-solu); }
+.catat-label + .catat-chips .chip:nth-child(5) { --dot: var(--mat-mud); }
+.catat-label + .catat-chips .chip.active { background: var(--dot); border-color: var(--dot); color: #fff; }
+.catat-label + .catat-chips .chip.active::before { background: #fff; }
+.catat-label + .catat-chips .chip:nth-child(3).active { color: var(--ink); }
+.catat-label + .catat-chips .chip:nth-child(3).active::before { background: var(--ink); }
+
+/* --- Catat Ritasi: PIT bertinta, fleet bergaris teal, tombol +N amber --- */
+.catat-pit { background: var(--ink); }
+.catat-pit b { color: #ffc24d; }
+.fleet-card { border-left: 4px solid var(--teal); }
+.fleet-caret { color: var(--teal); }
+.fleet-head .fleet-total { padding: 2px 12px; border-radius: 999px; background: var(--tint-amber); color: #8f4a00; font-size: 17px; }
+.qty-btn { background: var(--accent); color: var(--ink); }
+.qty-more { background: var(--tint-teal); color: var(--ink-2); }
+.wa-panel { background: var(--tint-green); }
+
+/* --- Kelola Fleet: ringkasan dan badge berwarna --- */
+.fl-summary div:nth-child(1) { background: var(--tint-amber); border-color: #f6d9a6; }
+.fl-summary div:nth-child(2) { background: var(--tint-teal); border-color: #bfe3df; }
+.fl-summary div:nth-child(3) { background: var(--tint-sky); border-color: #c6d9f0; }
+.fl-summary .fl-warn { background: var(--tint-coral); border-color: #f6c4ae; }
+.fl-row .fl-name + .fl-badge { background: var(--tint-teal); border-color: #bfe3df; color: var(--ink-2); }
+.fl-row .fl-badge + .fl-badge { background: var(--tint-amber); border-color: #f6d9a6; color: #8f4a00; }
+.fl-row .fl-badge.fl-badge-empty { background: transparent; border: 1px dashed var(--border); color: var(--text-muted); }
+.fl-actionbar { border-top: 4px solid transparent; border-image: none; border-top-color: var(--accent); }
+
+/* --- Layar TV --- */
+.pitcards-grand { background: var(--ink); }
+.pitcards-grand-num { color: #ffc24d; }
+.pitcard-head { background: var(--accent); color: var(--ink); }
+.pitcard-fleets b { color: var(--ink-2); }
