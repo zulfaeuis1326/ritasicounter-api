@@ -6,14 +6,14 @@
    nuansa stone/concrete hangat, bukan abu-abu-biru dingin khas template SaaS. */
 :root,
 [data-theme="light"] {
-  --bg: #f4efe1;
-  --surface: #fffdf9;
-  --surface-alt: #ece2cb;
-  --border: #ddcfab;
-  --text: #241f15;
-  --text-muted: #7a7158;
+  --bg: #f6f3ee;
+  --surface: #ffffff;
+  --surface-alt: #f0ece3;
+  --border: #e5dfd3;
+  --text: #1d1a14;
+  --text-muted: #6b655a;
 
-  --accent: #ef8a00;
+  --accent: #f08c00;
   --accent-strong: #c96b00;
   --accent-2: #0f8b8d;
   --accent-2-strong: #0a6668;
@@ -27,10 +27,10 @@
   --mat-solu: #2f6fb0;
   --mat-mud: #6b6148;
   --stripe-alt: #241f15;
-  --accent-contrast: #fffaf0;
+  --accent-contrast: #1d1a14;
   --accent-gradient-end: #c96b00;
   --accent-shadow: #8a4a00;
-  --btn-disabled-bg: #d6c9a8;
+  --btn-disabled-bg: #e3dccd;
   --accent-soft: rgba(239, 138, 0, 0.14);
   --accent-glow: rgba(239, 138, 0, 0.4);
   --ok-soft: rgba(47, 158, 82, 0.10);
@@ -38,9 +38,9 @@
   --amber: #b8780a;
   --amber-soft: rgba(184, 120, 10, 0.12);
 
-  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 
