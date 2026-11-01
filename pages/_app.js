@@ -9,6 +9,8 @@ import "../styles/extras.css";
 import "../styles/tweaks.css";
 import "../styles/utilities.css";
 import "../styles/theme.css";
+import "../styles/palette.css";
+import "../styles/admin.css";
 
 export default function App({ Component, pageProps }) {
   return (
