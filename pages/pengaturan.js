@@ -42,9 +42,10 @@ export default function Pengaturan() {
   useEffect(() => {
     (async () => {
       try {
-        const u = await loadAuth();
+        // dua request ini tidak saling bergantung, jadi dijalankan bersamaan (bukan berurutan)
+        const [u, d] = await Promise.all([loadAuth(), loadInfo().catch(() => null)]);
         if (!u) return;
-        const d = await loadInfo();
+        if (!d) throw new Error("data pengaturan tidak terbaca");
         setChoice(String((u.role === "operator" ? d.fleetId : d.workPitId) || ""));
       } catch (e) { setBanner({ type: "error", text: "Gagal memuat: " + e.message }); }
     })();
@@ -67,8 +68,7 @@ export default function Pengaturan() {
     try {
       const id = choice === "" ? null : Number(choice);
       await api("POST", "/api/auth/work-setting", isOperator ? { fleetId: id } : { pitId: id });
-      const d = await loadInfo(); // baca ulang dari database untuk membuktikan tersimpan
-      await loadAuth();
+      const [d] = await Promise.all([loadInfo(), loadAuth()]); // baca ulang dari database untuk membuktikan tersimpan
       const tersimpan = isOperator ? (d.fleetId || null) === id : ((d.workPitId || null) === id && d.workSet);
       if (!tersimpan) { setBanner({ type: "warn", text: "Server menjawab sukses, tapi data belum sesuai. Muat ulang halaman dan cek lagi." }); return; }
       if (wajib) { router.push("/"); return; }
@@ -121,4 +121,4 @@ export default function Pengaturan() {
       </main>
     </div>
   );
-              }
+}
