@@ -110,7 +110,20 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
     return <a href={href} title={label}>{content}</a>;
   }
 
+  // Judul dan keterangan halaman untuk bilah di atas konten
+  const META = {
+    "input-ritasi": { title: homeLabel, sub: isOperator ? "Catat setiap ritasi unitmu" : "Pantau ritasi shift yang berjalan", icon: <ClickIcon /> },
+    pengaturan: { title: "Pengaturan", sub: isOperator ? "Pilih excavator tempat kamu memuat" : "Pilih lokasi PIT tempat kamu bertugas", icon: <SlidersIcon /> },
+    catat: { title: "Catat Ritasi", sub: "Input ritasi per hauler", icon: <TruckIcon /> },
+    dashboard: { title: "Dashboard", sub: "Ringkasan produksi", icon: <ChartIcon /> },
+    display: { title: "Display", sub: "Tampilan layar TV", icon: <ScreenIcon /> },
+    fleet: { title: "Kelola Fleet", sub: "Penempatan HD, PC, dan lokasi", icon: <TruckIcon /> },
+    akun: { title: "Kelola Akun", sub: "Persetujuan dan peran pengguna", icon: <UsersIcon /> },
+  };
+  const meta = META[currentPage] || { title: "RitasiCounter", sub: "", icon: <ClickIcon /> };
+
   return (
+    <>
     <header className="topbar">
       <div className="topbar-logo">
         <span className="topbar-mark">
@@ -124,11 +137,13 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
       </button>
 
       <nav className="topbar-nav">
+        <div className="topbar-section">Operasional</div>
         <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
         <NavItem id="pengaturan" href="/pengaturan" label={isOperator ? "Pengaturan" : "PIT: " + ((authUser && authUser.work_pit_name) || "Semua")} icon={<SlidersIcon />} show={isOperator || isPengawas} />
         <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
         <NavItem id="display" href="/display" label="Display" icon={<ScreenIcon />} show={canMonitorAll} />
+        {canMonitorAll && <div className="topbar-section">Manajemen</div>}
         <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Kelola Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
@@ -143,5 +158,25 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
         <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
       </div>
     </header>
+
+    <div className="pagebar">
+      <div className="pagebar-title">
+        <span className="pagebar-tile">{meta.icon}</span>
+        <div className="pagebar-text">
+          <h1 className="pagebar-h1">{meta.title}</h1>
+          {meta.sub && <div className="pagebar-sub">{meta.sub}</div>}
+        </div>
+      </div>
+      <div className="pagebar-right">
+        <nav className="pagebar-crumb" aria-label="Breadcrumb"><span>Beranda</span><span>/</span><b>{meta.title}</b></nav>
+        <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
+        <span className="pagebar-user">{authUser.username}</span>
+        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
+        <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
+          <LogoutIcon />
+        </button>
+      </div>
+    </div>
+    </>
   );
 }
