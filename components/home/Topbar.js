@@ -41,6 +41,13 @@ function SlidersIcon() {
     </svg>
   );
 }
+function CheckIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+    </svg>
+  );
+}
 function ChartIcon() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -116,6 +123,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
     pengaturan: { title: "Pengaturan", sub: isOperator ? "Pilih excavator tempat kamu memuat" : "Pilih lokasi PIT tempat kamu bertugas", icon: <SlidersIcon /> },
     catat: { title: "Catat Ritasi", sub: "Input ritasi per hauler", icon: <TruckIcon /> },
     dashboard: { title: "Dashboard", sub: "Ringkasan produksi", icon: <ChartIcon /> },
+    approval: { title: "Approval Shift", sub: "Setujui shift yang sudah ditutup", icon: <CheckIcon /> },
     display: { title: "Display", sub: "Tampilan layar TV", icon: <ScreenIcon /> },
     fleet: { title: "Kelola Fleet", sub: "Penempatan HD, PC, dan lokasi", icon: <TruckIcon /> },
     akun: { title: "Kelola Akun", sub: "Persetujuan dan peran pengguna", icon: <UsersIcon /> },
@@ -138,10 +146,12 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
 
       <nav className="topbar-nav">
         <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
+        <NavItem id="pengaturan" href="/pengaturan" label="Pengaturan" icon={<SlidersIcon />} show={isOperator} />
         <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
-        <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" icon={<TruckIcon />} show={canMonitorAll} />
-        <NavItem id="akun" href="/admin/operators" label="Kelola Akun" icon={<UsersIcon />} show={isAdmin} />
+        <NavItem id="approval" href="/approval" label="Approval" icon={<CheckIcon />} show={canMonitorAll} />
+        <NavItem id="fleet" href="/admin/fleet" label="Fleet" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="akun" href="/admin/operators" label="Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
 
       <div className="side-card">
@@ -173,6 +183,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
 
     <div className="pagebar">
       <div className="pagebar-title">
+        {currentPage !== "input-ritasi" && <a className="pagebar-back" href="/" aria-label="Kembali ke beranda">&#8249;</a>}
         <span className="pagebar-tile">{meta.icon}</span>
         <div className="pagebar-text">
           <h1 className="pagebar-h1">{meta.title}</h1>
