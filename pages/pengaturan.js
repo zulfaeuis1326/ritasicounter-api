@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { atLeast } from "../lib/roles";
 import Topbar from "../components/home/Topbar";
@@ -19,8 +19,6 @@ async function api(method, url, body) {
 // Pengawas  : pilih lokasi PIT kerja (wajib setiap login).
 export default function Pengaturan() {
   const router = useRouter();
-  const routerRef = useRef(router);
-  routerRef.current = router;
   const [authUser, setAuthUser] = useState(undefined);
   const [info, setInfo] = useState(null);
   const [choice, setChoice] = useState("");
@@ -29,10 +27,10 @@ export default function Pengaturan() {
 
   const loadAuth = useCallback(async () => {
     const d = await api("GET", "/api/auth/me");
-    if (!d.user) { routerRef.current.push("/login"); return null; }
+    if (!d.user) { router.push("/login"); return null; }
     setAuthUser(d.user);
     return d.user;
-  }, []);
+  }, [router]);
   const loadInfo = useCallback(async () => {
     const d = await api("GET", "/api/auth/work-setting");
     setInfo(d);
@@ -42,10 +40,9 @@ export default function Pengaturan() {
   useEffect(() => {
     (async () => {
       try {
-        // dua request ini tidak saling bergantung, jadi dijalankan bersamaan (bukan berurutan)
-        const [u, d] = await Promise.all([loadAuth(), loadInfo().catch(() => null)]);
+        const u = await loadAuth();
         if (!u) return;
-        if (!d) throw new Error("data pengaturan tidak terbaca");
+        const d = await loadInfo();
         setChoice(String((u.role === "operator" ? d.fleetId : d.workPitId) || ""));
       } catch (e) { setBanner({ type: "error", text: "Gagal memuat: " + e.message }); }
     })();
@@ -55,7 +52,7 @@ export default function Pengaturan() {
     return <div className="container"><div className="card"><div className="hint">{banner ? banner.text : "Memuat..."}</div></div></div>;
   }
   const isOperator = authUser.role === "operator";
-  const wajib = !isOperator && !!(router.query.wajib || !authUser.work_set);
+  const wajib = !isOperator && router.query.wajib;
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -68,10 +65,12 @@ export default function Pengaturan() {
     try {
       const id = choice === "" ? null : Number(choice);
       await api("POST", "/api/auth/work-setting", isOperator ? { fleetId: id } : { pitId: id });
-      const [d] = await Promise.all([loadInfo(), loadAuth()]); // baca ulang dari database untuk membuktikan tersimpan
+      const d = await loadInfo(); // baca ulang dari database untuk membuktikan tersimpan
+      await loadAuth();
       const tersimpan = isOperator ? (d.fleetId || null) === id : ((d.workPitId || null) === id && d.workSet);
       if (!tersimpan) { setBanner({ type: "warn", text: "Server menjawab sukses, tapi data belum sesuai. Muat ulang halaman dan cek lagi." }); return; }
-      if (wajib) { router.push("/"); return; }
+      // Operator selesai memilih excavator -> langsung kembali ke Input Ritasi (tidak terjebak di halaman ini)
+      if (isOperator || router.query.wajib) { router.push("/"); return; }
       setBanner({ type: "ok", text: "Tersimpan di database dan sudah dicek ulang." });
     } catch (e) {
       setBanner({ type: "error", text: "Gagal menyimpan: " + e.message });
@@ -102,7 +101,8 @@ export default function Pengaturan() {
               ))}
             </select>
             <div className="hint mt-8">Ritasi yang kamu catat setelah ini dicatat atas excavator yang dipilih. Ritasi sebelumnya tidak berubah. Pilihan dilepas otomatis saat kamu logout.</div>
-            <button className="auth-submit mt-12" disabled={saving} onClick={save}>{saving ? "Menyimpan..." : "Simpan Pengaturan"}</button>
+            <button className="auth-submit mt-12" disabled={saving} onClick={save}>{saving ? "Menyimpan..." : "Simpan dan Kembali"}</button>
+            <button className="btn btn-secondary mt-8" onClick={() => router.push("/")}>Kembali ke Input Ritasi</button>
           </div>
         ) : (
           <div className="card">
@@ -115,6 +115,7 @@ export default function Pengaturan() {
               </label>
             ))}
             <button className="auth-submit mt-12" disabled={saving} onClick={save}>{saving ? "Menyimpan..." : (wajib ? "Simpan dan Lanjut" : "Simpan Lokasi")}</button>
+            {!wajib && <button className="btn btn-secondary mt-8" onClick={() => router.push("/")}>Kembali ke Beranda</button>}
           </div>
         )}
         <div className="app-footer">designed by Najib.dev</div>
