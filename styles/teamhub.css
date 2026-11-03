@@ -174,3 +174,28 @@ body, .v4-page { background: var(--bg); color: var(--text); }
   .fl-actionbar { bottom: 64px; }
   .toast-stack { bottom: 76px; }
 }
+
+/* ===== Approval Shift ===== */
+.apv-filter { display: flex; flex-direction: column; gap: 10px; }
+.apv-more summary { display: flex; align-items: center; min-height: 36px; font-size: 13px; font-weight: 600; color: var(--accent-strong); cursor: pointer; }
+.apv-reset { align-self: flex-start; }
+.apv-day { position: sticky; top: 0; z-index: 5; padding: 12px 2px 6px; background: var(--bg); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.apv-row { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 10px 14px; margin: 0 0 8px; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+.apv-check { flex: none; width: 22px; }
+.apv-check input { width: 22px; height: 22px; accent-color: var(--accent-strong); }
+.apv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding: 0; background: none; border: 0; text-align: left; cursor: pointer; }
+.apv-title { font-size: 15px; font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
+.apv-meta { font-size: 12.5px; color: var(--text-muted); }
+.apv-badge { flex: none; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.apv-pending { background: #fff3d6; color: #7a4d00; }
+.apv-approved { background: var(--accent-soft); color: var(--accent-strong); }
+.apv-open { background: #e8eef5; color: #47566b; }
+.apv-detail { display: flex; flex-direction: column; gap: 10px; margin: -4px 0 10px; padding: 12px 14px; background: var(--surface-alt); border-radius: var(--radius); font-size: 13.5px; }
+.apv-foot { margin-top: 12px; text-align: center; }
+.apv-loadmore { width: 100%; margin-top: 8px; }
+@media (min-width: 900px) { .apv-filter { position: sticky; top: 76px; z-index: 20; } .apv-day { top: 0; } }
+
+/* Tombol kembali di bilah judul (HP): selalu ada jalan pulang dari halaman mana pun */
+.pagebar-back { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--surface-alt); color: var(--text); font-size: 26px; line-height: 1; text-decoration: none; }
+.pagebar-back:active { transform: scale(0.95); }
+@media (min-width: 900px) { .pagebar-back { display: none; } }
