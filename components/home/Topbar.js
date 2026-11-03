@@ -71,7 +71,7 @@ const SIDEBAR_KEY = "rc_sidebar_collapsed";
 export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, onLogout, currentPage }) {
   const [collapsed, setCollapsed] = useState(false);
   const page = currentPage || "input-ritasi";
-  const homeLabel = isOperator ? "Input Ritasi" : "Monitoring Ritasi";
+  const homeLabel = isOperator ? "Input Ritasi" : "Beranda";
   const router = useRouter();
   const isPengawas = canMonitorAll && !isAdmin;
 
@@ -120,7 +120,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
     fleet: { title: "Kelola Fleet", sub: "Penempatan HD, PC, dan lokasi", icon: <TruckIcon /> },
     akun: { title: "Kelola Akun", sub: "Persetujuan dan peran pengguna", icon: <UsersIcon /> },
   };
-  const meta = META[currentPage] || { title: "RitasiCounter", sub: "", icon: <ClickIcon /> };
+  const meta = META[page] || { title: "RitasiCounter", sub: "", icon: <ClickIcon /> };
 
   return (
     <>
@@ -137,16 +137,28 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
       </button>
 
       <nav className="topbar-nav">
-        <div className="topbar-section">Operasional</div>
         <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
-        <NavItem id="pengaturan" href="/pengaturan" label={isOperator ? "Pengaturan" : "PIT: " + ((authUser && authUser.work_pit_name) || "Semua")} icon={<SlidersIcon />} show={isOperator || isPengawas} />
         <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
-        <NavItem id="display" href="/display" label="Display" icon={<ScreenIcon />} show={canMonitorAll} />
-        {canMonitorAll && <div className="topbar-section">Manajemen</div>}
         <NavItem id="fleet" href="/admin/fleet" label="Kelola Fleet" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Kelola Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
+
+      <div className="side-card">
+        {isOperator ? (
+          <>
+            <div className="side-card-title">Excavator</div>
+            <div className="side-card-text">{authUser.fleet_name || "Belum dipilih. Pilih tempat kamu memuat."}</div>
+            <a className="side-card-btn" href="/pengaturan">Atur excavator</a>
+          </>
+        ) : (
+          <>
+            <div className="side-card-title">Layar TV</div>
+            <div className="side-card-text">Tampilkan ritasi shift ini di TV kantor.</div>
+            <a className="side-card-btn" href="/display">Buka Display</a>
+          </>
+        )}
+      </div>
 
       <div className="topbar-spacer" />
 
@@ -169,6 +181,11 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
       </div>
       <div className="pagebar-right">
         <nav className="pagebar-crumb" aria-label="Breadcrumb"><span>Beranda</span><span>/</span><b>{meta.title}</b></nav>
+        {(isOperator || isPengawas) && (
+          <a className="pagebar-chip" href="/pengaturan" title="Ubah di Pengaturan">
+            {isOperator ? "Excavator: " + (authUser.fleet_name || "belum dipilih") : "PIT: " + (authUser.work_pit_name || "Semua")}
+          </a>
+        )}
         <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
         <span className="pagebar-user">{authUser.username}</span>
         <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
