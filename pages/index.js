@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { startPolling } from "../lib/poll";
 import { useRouter } from "next/router";
 import { atLeast } from "../lib/roles";
 import { ToastProvider, useToast } from "../components/Toast";
@@ -192,11 +193,11 @@ function HomeContent() {
     }
     loadRecap();
     loadHistory();
-    const poll = setInterval(function () {
+    // 5 detik (dulu 2,5) dan berhenti saat tab tersembunyi. Klik sendiri langsung tampil dari respons POST.
+    return startPolling(function () {
       loadRecap();
       loadHistory();
-    }, 2500);
-    return function () { clearInterval(poll); };
+    }, 5000);
   }, [authUser, needsUnitSetup, isAdmin, canMonitorAll, loadUnits, loadRecap, loadPastShifts, loadHistory, loadFleets]);
 
   async function handleSaveReportHours(hours) {
@@ -546,7 +547,7 @@ function HomeContent() {
         )}
 
         <div className="v4-grid">
-          {canClickRitasi && (
+          {canClickRitasi && !canMonitorAll && (
             <RitasiPanel
               isAdmin={isAdmin}
               authUser={authUser}
@@ -581,23 +582,6 @@ function HomeContent() {
                 reportHours={reportHours}
                 onSaveReportHours={handleSaveReportHours}
               />
-            )}
-
-            {isAdmin && (
-              <section className="card">
-                <h2 className="sec-title-icon">Tambah Unit</h2>
-                <form onSubmit={handleAddUnit} className="d-flex gap-8">
-                  <input
-                    value={newUnitName}
-                    onChange={function (e) { setNewUnitName(e.target.value); }}
-                    placeholder="Contoh: HD-05"
-                    className="flex-1"
- />
-                  <button className="btn btn-secondary w-auto px-16" >
-                    Tambah
-                  </button>
-                </form>
-              </section>
             )}
 
             {canMonitorAll && (

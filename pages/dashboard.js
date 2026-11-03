@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { startPolling } from "../lib/poll";
 import { useRouter } from "next/router";
 import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
@@ -24,6 +25,32 @@ const MATERIAL_COLORS = {
   SOLU: "#0891b2",
   MUD: "#65a30d",
 };
+
+function KpiRow({ data, range }) {
+  const buckets = data.bucketSeries || [];
+  const unit = range === "day" ? "hari" : "shift";
+  const avg = buckets.length ? Math.round(data.grandTotal / buckets.length) : 0;
+  const last = buckets.length ? buckets[buckets.length - 1].total : 0;
+  const prev = buckets.length > 1 ? buckets[buckets.length - 2].total : null;
+  const delta = prev ? Math.round(((last - prev) / prev) * 100) : null;
+  const top = (data.unitSeries || []).reduce(function (b, u) { return !b || u.total > b.total ? u : b; }, null);
+  return (
+    <div className="kpi-row">
+      <div className="card kpi"><div className="kpi-body">
+        <div className="kpi-lbl">Total ritasi</div><div className="kpi-num">{data.grandTotal}</div>
+        <div className="kpi-sub">{buckets.length} {unit} terakhir</div>
+      </div></div>
+      <div className="card kpi"><div className="kpi-body">
+        <div className="kpi-lbl">Rata-rata per {unit}</div><div className="kpi-num">{avg}</div>
+        {delta !== null && <div className={"kpi-sub " + (delta >= 0 ? "kpi-up" : "kpi-down")}>{unit} terakhir {delta >= 0 ? "+" : ""}{delta}% dari sebelumnya</div>}
+      </div></div>
+      <div className="card kpi"><div className="kpi-body">
+        <div className="kpi-lbl">Unit teratas</div><div className="kpi-num kpi-num-sm">{top ? top.name : "-"}</div>
+        <div className="kpi-sub">{top ? top.total + " rit" : "belum ada data"}</div>
+      </div></div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const router = useRouter();
@@ -82,16 +109,17 @@ export default function Dashboard() {
     if (!authUser) return;
     loadData();
     loadRecap();
-    const poll = setInterval(() => {
+    return startPolling(() => {
       loadData();
       loadRecap();
     }, 6000);
-    return () => clearInterval(poll);
   }, [authUser, loadData, loadRecap]);
 
   const allRecapUnits = (recap && recap.units) || [];
   const visibleUnits = showAllUnits ? allRecapUnits : allRecapUnits.filter((u) => u.total > 0);
   const hiddenUnitCount = allRecapUnits.length - visibleUnits.length;
+  // Grafik per unit cukup 10 teratas (daftar panjang sulit dibaca, terutama di HP)
+  const topUnits = ((data && data.unitSeries) || []).slice().sort(function (a, b) { return b.total - a.total; }).slice(0, 10);
 
   if (authUser === undefined || authUser === null) {
     return (
@@ -114,26 +142,12 @@ export default function Dashboard() {
       <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="dashboard" />
 
       <main className="container">
-      <a className="tv-btn" href="/display">Tonton TV</a>
-      <div className="card">
-        <div className="clock" style={{ fontSize: 18 }}>Dashboard Analitik</div>
-      </div>
-
-      <div className="card">
-        <div className="material-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
-          <button
-            className={`material-btn ${range === "day" ? "active" : ""}`}
-            onClick={() => setRange("day")}
-          >
-            Per Hari (7 hari)
-          </button>
-          <button
-            className={`material-btn ${range === "shift" ? "active" : ""}`}
-            onClick={() => setRange("shift")}
-          >
-            Per Shift (10 shift)
-          </button>
+      <div className="dash-top">
+        <div className="seg" role="tablist" aria-label="Rentang waktu">
+          <button className={"seg-btn" + (range === "day" ? " active" : "")} onClick={() => setRange("day")}>7 hari</button>
+          <button className={"seg-btn" + (range === "shift" ? " active" : "")} onClick={() => setRange("shift")}>10 shift</button>
         </div>
+        <a className="tv-btn" href="/display">Tonton TV</a>
       </div>
 
       {error && (
@@ -142,7 +156,9 @@ export default function Dashboard() {
 
       {data && (
         <>
-          <div className="card">
+          <KpiRow data={data} range={range} />
+          <div className="dash-grid">
+          <div className="card dash-wide">
             <div className="section-title">Total Ritasi ({range === "day" ? "per Hari" : "per Shift"})</div>
             <div className="hint mb-8" >Grand total: <b>{data.grandTotal}</b></div>
             <ResponsiveContainer width="100%" height={220}>
@@ -150,19 +166,19 @@ export default function Dashboard() {
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Bar dataKey="total" fill="#1f3864" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="total" fill="#3ebd93" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <div className="card">
-            <div className="section-title">Produksi per Unit</div>
-            <ResponsiveContainer width="100%" height={Math.max(180, data.unitSeries.length * 34)}>
-              <BarChart data={data.unitSeries} layout="vertical" margin={{ left: 20 }}>
+            <div className="section-title">Produksi per Unit (10 teratas)</div>
+            <ResponsiveContainer width="100%" height={Math.max(180, topUnits.length * 34)}>
+              <BarChart data={topUnits} layout="vertical" margin={{ left: 20 }}>
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={80} />
                 <Tooltip />
-                <Bar dataKey="total" fill="#2563eb" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="total" fill="#3ebd93" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -177,8 +193,9 @@ export default function Dashboard() {
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
-                  label={(entry) => `${entry.name}: ${entry.total}`}
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={2}
                 >
                   {data.materialSeries.map((m) => (
                     <Cell key={m.name} fill={MATERIAL_COLORS[m.name] || "#888"} />
@@ -200,15 +217,16 @@ export default function Dashboard() {
                 <XAxis dataKey="hour" tickFormatter={(h) => String(h).padStart(2, "0")} tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip labelFormatter={(h) => `Jam ${String(h).padStart(2, "0")}`} />
-                <Line type="monotone" dataKey="total" stroke="#dc2626" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="total" stroke="#1a8463" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
+          </div>
           </div>
         </>
       )}
 
-      <div className="card">
-        <div className="section-title">Rekap Per Jam - Shift Berjalan (Semua Unit)</div>
+      <details className="card dash-details">
+        <summary className="section-title">Rekap Per Jam - Shift Berjalan (Semua Unit)</summary>
         <div className="hint mb-8" >
           Kolom jam yang ditandai adalah jam yang sedang berjalan saat ini.
           {hiddenUnitCount > 0 && !showAllUnits && (
@@ -268,7 +286,7 @@ export default function Dashboard() {
             </tbody>
           </table>
         </div>
-      </div>
+      </details>
 
       <div className="card">
         <div className="section-title">Rincian Material - Shift Berjalan</div>

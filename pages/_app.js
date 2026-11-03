@@ -11,6 +11,7 @@ import "../styles/utilities.css";
 import "../styles/theme.css";
 import "../styles/palette.css";
 import "../styles/admin.css";
+import "../styles/teamhub.css";
 
 export default function App({ Component, pageProps }) {
   return (
@@ -20,7 +21,7 @@ export default function App({ Component, pageProps }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap"
           rel="stylesheet"
         />
       </Head>
