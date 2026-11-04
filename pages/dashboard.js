@@ -119,6 +119,7 @@ export default function Dashboard() {
   const visibleUnits = showAllUnits ? allRecapUnits : allRecapUnits.filter((u) => u.total > 0);
   const hiddenUnitCount = allRecapUnits.length - visibleUnits.length;
   // Grafik per unit cukup 10 teratas (daftar panjang sulit dibaca, terutama di HP)
+  const materialShown = ((data && data.materialSeries) || []).filter((m) => m.total > 0);
   const topUnits = ((data && data.unitSeries) || []).slice().sort(function (a, b) { return b.total - a.total; }).slice(0, 10);
 
   if (authUser === undefined || authUser === null) {
@@ -147,7 +148,6 @@ export default function Dashboard() {
           <button className={"seg-btn" + (range === "day" ? " active" : "")} onClick={() => setRange("day")}>7 hari</button>
           <button className={"seg-btn" + (range === "shift" ? " active" : "")} onClick={() => setRange("shift")}>10 shift</button>
         </div>
-        <a className="tv-btn" href="/display">Tonton TV</a>
       </div>
 
       {error && (
@@ -188,7 +188,7 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
                 <Pie
-                  data={data.materialSeries.filter((m) => m.total > 0)}
+                  data={materialShown}
                   dataKey="total"
                   nameKey="name"
                   cx="50%"
@@ -197,7 +197,7 @@ export default function Dashboard() {
                   outerRadius={85}
                   paddingAngle={2}
                 >
-                  {data.materialSeries.map((m) => (
+                  {materialShown.map((m) => (
                     <Cell key={m.name} fill={MATERIAL_COLORS[m.name] || "#888"} />
                   ))}
                 </Pie>
@@ -268,7 +268,7 @@ export default function Dashboard() {
                 );
               })}
               {visibleUnits.length === 0 && (
-                <tr><td colSpan={2} className="hint">Belum ada ritasi di shift ini.</td></tr>
+                <tr><td colSpan={(recap && recap.hours ? recap.hours.length : 0) + 2} className="hint">Belum ada ritasi di shift ini.</td></tr>
               )}
               {recap && (
                 <tr className="total-row">

@@ -57,6 +57,8 @@ function HomeContent() {
   const pendingClickRef = useRef(null);
   const [newUnitName, setNewUnitName] = useState("");
   const [showAllUnits, setShowAllUnits] = useState(false);
+  // Hanya satu baris riwayat yang menampilkan tombol Hapus (ketuk baris untuk membukanya)
+  const [openHistoryId, setOpenHistoryId] = useState(null);
   const [reportHours, setReportHours] = useState([7, 12, 19]);
 
   // Layar setup unit operator
@@ -539,10 +541,6 @@ function HomeContent() {
         <ShiftBanner recap={recap} recapError={recapError} clock={clock} />
 
         {canMonitorAll && (
-          <a className="tv-btn" href="/display">Tonton TV</a>
-        )}
-
-        {canMonitorAll && (
           <StatCards recap={recap} allRecapUnits={allRecapUnits} totalFleetCount={fleets.length} />
         )}
 
@@ -586,7 +584,7 @@ function HomeContent() {
 
             {canMonitorAll && (
               <section className="card">
-                <h2 className="sec-title-icon">Shift & Approval</h2>
+                <h2 className="sec-title-icon">Shift</h2>
                 <div className="hint" style={{ marginBottom: 10 }}>
                   Tutup shift ini kalau produksi shift sudah selesai. Export tetap bisa dilakukan
                   kapan saja tanpa menutup shift.
@@ -613,20 +611,21 @@ function HomeContent() {
             <section className="card">
               <h2 className="sec-title-icon">Riwayat & Revisi Ritasi</h2>
               <div className="hint mb-8" >
-                Salah pencet material? Hapus entri yang salah di sini. ({history.length} entri)
+                Salah pencet material? Ketuk entri yang salah, lalu tekan Hapus. ({history.length} entri)
               </div>
               {history.length === 0 && <div className="hint">Belum ada ritasi tercatat.</div>}
               {history.length > 0 && (
                 <div className="history-list-scroll">
                   {history.map(function (h) {
+                    const canDelete = isAdmin || h.operator_id === authUser.id;
                     return (
-                      <div key={h.id} className="history-row history-row-compact">
+                      <div key={h.id} className="history-row history-row-compact" style={canDelete ? { cursor: "pointer" } : undefined} onClick={canDelete ? function () { setOpenHistoryId(openHistoryId === h.id ? null : h.id); } : undefined}>
                         <div className="history-info">
                           <b>{h.unit_name}</b> · {h.material} · jam {String(h.jam).padStart(2, "0")}:00
                           <span className="history-meta"> — {h.operator_name || "(tanpa nama)"}, {new Date(h.clicked_at).toLocaleTimeString("id-ID")}</span>
                         </div>
-                        {(isAdmin || h.operator_id === authUser.id) && (
-                          <button className="btn-mini-danger" onClick={function () { handleDeleteHistory(h.id); }}>
+                        {canDelete && openHistoryId === h.id && (
+                          <button className="btn-mini-danger" onClick={function (e) { e.stopPropagation(); handleDeleteHistory(h.id); }}>
                             Hapus
                           </button>
                         )}

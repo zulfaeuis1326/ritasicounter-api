@@ -1,18 +1,26 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import { atLeast } from "../lib/roles";
+import { startPolling } from "../lib/poll";
 import Topbar from "../components/home/Topbar";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 const TABS = [["pending", "Menunggu"], ["approved", "Disetujui"], ["all", "Semua"]];
 
 async function api(method, url, body) {
-  const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined, cache: "no-store" });
+  let res;
+  try {
+    res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined, cache: "no-store" });
+  } catch (e) {
+    throw new Error("Tidak tersambung ke server. Periksa sinyal lalu coba lagi.");
+  }
   const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { window.location.href = "/login"; throw new Error("Sesi habis, silakan login lagi."); }
   if (!res.ok) throw new Error(data.error || "Error " + res.status);
   return data;
 }
 function dayLabel(day, today) {
+  if (!day) return "Tanggal tidak diketahui";
   if (day === today) return "Hari ini";
   const y = new Date(today + "T00:00:00Z"); y.setUTCDate(y.getUTCDate() - 1);
   if (day === y.toISOString().slice(0, 10)) return "Kemarin";
@@ -67,13 +75,24 @@ export default function ApprovalShift() {
       if (id !== reqId.current) return; // jawaban lama diabaikan (filter sudah berubah)
       setItems((prev) => (cursor ? prev.concat(d.items) : d.items));
       setNextCursor(d.nextCursor); setCounts(d.counts); setToday(d.today);
-    } catch (e) { if (id === reqId.current) setBanner({ type: "error", text: "Gagal memuat: " + e.message }); }
+      setBanner((b) => (b && b.retry ? null : b));
+    } catch (e) { if (id === reqId.current) setBanner({ type: "error", text: "Gagal memuat: " + e.message, retry: true }); }
   }, [tab, q, shiftType, from, to]);
 
   useEffect(() => {
     if (!authUser) return;
     setLoading(true); setSelected({});
     load(null).finally(() => setLoading(false));
+  }, [authUser, load]);
+
+  const guardRef = useRef({});
+  useEffect(() => {
+    if (!authUser) return;
+    return startPolling(() => {
+      const g = guardRef.current;
+      if (g.busy || g.hasSelection || g.hasMore) return; // jangan ganggu pekerjaan yang sedang berjalan
+      load(null);
+    }, 20000);
   }, [authUser, load]);
 
   if (!authUser) return <div className="container"><div className="card"><div className="hint">Memuat...</div></div></div>;
@@ -86,7 +105,12 @@ export default function ApprovalShift() {
   async function act(action, ids) {
     setSaving(true); setBanner(null);
     try {
-      const r = await api("POST", "/api/shift/approvals", { action, ids });
+      let updated = 0;
+      for (let i = 0; i < ids.length; i += 100) { // server menerima maksimal 100 id per permintaan
+        const r = await api("POST", "/api/shift/approvals", { action, ids: ids.slice(i, i + 100) });
+        updated += r.updated;
+      }
+      const r = { updated };
       const skipped = ids.length - r.updated;
       const verb = action === "approve" ? "disetujui" : "dikembalikan ke Menunggu";
       setBanner({ type: skipped > 0 ? "warn" : "ok", text: r.updated + " shift " + verb + " dan tercatat di database." + (skipped > 0 ? " " + skipped + " dilewati (belum ditutup atau statusnya sudah berubah)." : "") });
@@ -101,12 +125,18 @@ export default function ApprovalShift() {
   const groups = [];
   items.forEach((s) => { const g = groups[groups.length - 1]; if (g && g.day === s.day) g.items.push(s); else groups.push({ day: s.day, items: [s] }); });
   const filtered = !!(q || shiftType || from || to);
+  guardRef.current = { busy: saving || loadingMore, hasSelection: selIds.length > 0, hasMore: !!nextCursor };
 
   return (
     <div className="v4-page">
       <Topbar authUser={authUser} canMonitorAll={true} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="approval" />
       <main className="container">
-        {banner && <div className={"fl-banner fl-banner-" + banner.type} role="status">{banner.type === "ok" ? "✓ " : ""}{banner.text}</div>}
+        {banner && (
+          <div className={"fl-banner fl-banner-" + banner.type} role="status">
+            {banner.type === "ok" ? "✓ " : ""}{banner.text}
+            {banner.retry && <> <a href="#" onClick={(e) => { e.preventDefault(); setLoading(true); load(null).finally(() => setLoading(false)); }}>Coba lagi</a></>}
+          </div>
+        )}
 
         <div className="card apv-filter">
           <div className="catat-chips">
@@ -116,8 +146,8 @@ export default function ApprovalShift() {
           </div>
           <input className="field-input" type="search" value={qInput} onChange={(e) => setQInput(e.target.value)} placeholder="Cari shift (nama atau tanggal)..." />
           <div className="catat-chips">
-            {[[0, "Semua shift"], [1, "Siang"], [2, "Malam"]].map(([k, label]) => (
-              <button key={k} className={"chip" + (shiftType === k ? " active" : "")} onClick={() => setShiftType(k)}>{label}</button>
+            {[[1, "Siang"], [2, "Malam"]].map(([k, label]) => (
+              <button key={k} className={"chip" + (shiftType === k ? " active" : "")} onClick={() => setShiftType(shiftType === k ? 0 : k)}>{label}</button>
             ))}
           </div>
           <details className="apv-more" open={!!(from || to)}>
@@ -147,18 +177,16 @@ export default function ApprovalShift() {
                     {st === "pending" ? (
                       <label className="apv-check"><input type="checkbox" checked={!!selected[s.id]} onChange={(e) => setSelected({ ...selected, [s.id]: e.target.checked })} aria-label={"Pilih " + s.label} /></label>
                     ) : <span className="apv-check" />}
-                    <button className="apv-main" onClick={() => setExpanded({ ...expanded, [s.id]: !open })} aria-expanded={open}>
+                    <button className="apv-main" onClick={() => { if (st === "pending") setSelected({ ...selected, [s.id]: !selected[s.id] }); else if (st === "approved") setExpanded({ ...expanded, [s.id]: !open }); }} aria-expanded={st === "approved" ? open : undefined}>
                       <span className="apv-title">{s.label}</span>
-                      <span className="apv-meta">{s.shift_type === 1 ? "Siang" : "Malam"} · {s.open_time}–{s.close_time || "berjalan"} · {s.total} rit</span>
+                      <span className="apv-meta">{s.shift_type === 1 ? "Siang" : "Malam"} · {s.open_time}–{s.close_time || "berjalan"} · {s.total} rit{st === "open" ? " · belum ditutup" : ""}</span>
                     </button>
                     <span className={"apv-badge apv-" + st}>{STATE_LABEL[st]}</span>
                   </div>
-                  {open && (
+                  {open && st === "approved" && (
                     <div className="apv-detail">
                       {st === "approved" && <div>Disetujui oleh <b>{s.reviewed_by_name || "-"}</b> pada {s.reviewed_at ? new Date(s.reviewed_at).toLocaleString("id-ID") : "-"}.</div>}
-                      {st === "open" && <div>Shift ini belum ditutup, jadi belum bisa disetujui.</div>}
-                      {st === "pending" && <button className="auth-submit" disabled={saving} onClick={() => act("approve", [s.id])}>{saving ? "Menyimpan..." : "Setujui shift ini"}</button>}
-                      {st === "approved" && isAdmin && <button className="btn btn-secondary" disabled={saving} onClick={() => act("revoke", [s.id])}>Batalkan approval</button>}
+                      {isAdmin && <button className="btn btn-secondary" disabled={saving} onClick={() => act("revoke", [s.id])}>Batalkan approval</button>}
                     </div>
                   )}
                 </div>
