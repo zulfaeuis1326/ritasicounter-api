@@ -75,23 +75,19 @@ function UsersIcon() {
 
 const SIDEBAR_KEY = "rc_sidebar_collapsed";
 
-function NavItem({ page, id, href, label, icon, show }) {
-  if (show === false) return null;
-  const content = (
-    <>
-      <span className="topbar-nav-icon">{icon}</span>
-      <span className="topbar-nav-label">{label}</span>
-    </>
-  );
-  if (page === id) return <span className="topbar-nav-current" title={label}>{content}</span>;
-  return <a href={href} title={label}>{content}</a>;
-}
-
 export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, onLogout, currentPage }) {
   const [collapsed, setCollapsed] = useState(false);
   const page = currentPage || "input-ritasi";
   const homeLabel = isOperator ? "Input Ritasi" : "Beranda";
   const router = useRouter();
+
+  // Operator hanya punya satu layar kerja (Input Ritasi). Sidebar dan bilah menu bawah disembunyikan lewat
+  // kelas ini; satu-satunya jalan ke Pengaturan adalah chip Unit dan Excavator di bilah judul.
+  useEffect(function () {
+    if (!isOperator) return;
+    document.body.classList.add("op-solo");
+    return function () { document.body.classList.remove("op-solo"); };
+  }, [isOperator]);
   const isPengawas = canMonitorAll && !isAdmin;
 
   // Pengawas wajib memilih lokasi PIT kerja setiap kali login sebelum memakai aplikasi.
@@ -116,6 +112,19 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
     });
   }
 
+  function NavItem({ id, href, label, icon, show }) {
+    if (show === false) return null;
+    const isCurrent = page === id;
+    const content = (
+      <>
+        <span className="topbar-nav-icon">{icon}</span>
+        <span className="topbar-nav-label">{label}</span>
+      </>
+    );
+    if (isCurrent) return <span className="topbar-nav-current" title={label}>{content}</span>;
+    return <a href={href} title={label}>{content}</a>;
+  }
+
   // Judul dan keterangan halaman untuk bilah di atas konten
   const META = {
     "input-ritasi": { title: homeLabel, sub: isOperator ? "Catat setiap ritasi unitmu" : "Pantau ritasi shift yang berjalan", icon: <ClickIcon /> },
@@ -131,7 +140,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
 
   return (
     <>
-    <header className="topbar">
+    <header className={"topbar" + (isOperator ? " topbar-operator" : "")}>
       <div className="topbar-logo">
         <span className="topbar-mark">
           <img src="/logo.png" alt="Logo" className="topbar-mark-img" onError={function (e) { e.target.style.display = "none"; }} />
@@ -144,19 +153,44 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
       </button>
 
       <nav className="topbar-nav">
-        <NavItem page={page} id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
-        <NavItem page={page} id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
-        <NavItem page={page} id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
-        <NavItem page={page} id="approval" href="/approval" label="Approval" icon={<CheckIcon />} show={canMonitorAll} />
-        <NavItem page={page} id="fleet" href="/admin/fleet" label="Fleet" icon={<TruckIcon />} show={canMonitorAll} />
-        <NavItem page={page} id="akun" href="/admin/operators" label="Akun" icon={<UsersIcon />} show={isAdmin} />
+        <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
+        <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
+        <NavItem id="approval" href="/approval" label="Approval" icon={<CheckIcon />} show={canMonitorAll} />
+        <NavItem id="fleet" href="/admin/fleet" label="Fleet" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="akun" href="/admin/operators" label="Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
 
+      <div className="side-card">
+        {isOperator ? (
+          <>
+            <div className="side-card-title">Excavator</div>
+            <div className="side-card-text">{authUser.fleet_name || "Belum dipilih. Pilih tempat kamu memuat."}</div>
+            <a className="side-card-btn" href="/pengaturan">Atur excavator</a>
+          </>
+        ) : (
+          <>
+            <div className="side-card-title">Layar TV</div>
+            <div className="side-card-text">Tampilkan ritasi shift ini di TV kantor.</div>
+            <a className="side-card-btn" href="/display">Buka Display</a>
+          </>
+        )}
+      </div>
+
+      <div className="topbar-spacer" />
+
+      <div className="topbar-footer">
+        <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
+        <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
+          <LogoutIcon />
+        </button>
+        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
+      </div>
     </header>
 
-    <div className="pagebar">
+    <div className={"pagebar" + (isOperator ? " pagebar-op" : "")}>
       <div className="pagebar-title">
-        {page !== "input-ritasi" && <a className="pagebar-back" href="/" aria-label="Kembali ke beranda">&#8249;</a>}
+        {currentPage !== "input-ritasi" && <a className="pagebar-back" href="/" aria-label="Kembali ke beranda">&#8249;</a>}
         <span className="pagebar-tile">{meta.icon}</span>
         <div className="pagebar-text">
           <h1 className="pagebar-h1">{meta.title}</h1>
@@ -164,18 +198,15 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
         </div>
       </div>
       <div className="pagebar-right">
-        {canMonitorAll && page !== "display" && (
-          <a className="topbar-iconbtn" href="/display" title="Tonton TV" aria-label="Tonton TV" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
-            <ScreenIcon />
-          </a>
-        )}
-        {(isOperator || isPengawas) && page !== "pengaturan" && (
-          <a className="pagebar-chip" href="/pengaturan" title="Ubah di Pengaturan">
-            {isOperator ? "Excavator: " + (authUser.fleet_name || "belum dipilih") : "PIT: " + (authUser.work_pit_name || "Semua")}
+        <nav className="pagebar-crumb" aria-label="Breadcrumb"><span>Beranda</span><span>/</span><b>{meta.title}</b></nav>
+        {(isOperator || isPengawas) && !(isOperator && currentPage === "pengaturan") && (
+          <a className={"pagebar-chip" + (isOperator && !authUser.fleet_name ? " pagebar-chip-warn" : "")} href="/pengaturan" title="Ubah di Pengaturan">
+            {isOperator ? (authUser.unit_name ? authUser.unit_name + " · " : "") + (authUser.fleet_name || "Pilih excavator") : "PIT: " + (authUser.work_pit_name || "Semua")}
           </a>
         )}
         <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
         <span className="pagebar-user">{authUser.username}</span>
+        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
         <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
           <LogoutIcon />
         </button>
