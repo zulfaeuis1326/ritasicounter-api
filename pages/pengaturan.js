@@ -89,7 +89,6 @@ export default function Pengaturan() {
 
         {isOperator ? (
           <div className="card">
-            <h2 className="sec-title-icon">Pengaturan Operator</h2>
             <div className="fl-row"><span className="fl-name">Unit kamu</span><span className="fl-badge">{info.unitName || "belum dipilih"}</span></div>
             <div className="field-label mt-12 mb-6">Excavator (PC / Loader) tempat kamu memuat</div>
             <select className="field-input" value={choice} onChange={(e) => setChoice(e.target.value)}>
@@ -102,7 +101,6 @@ export default function Pengaturan() {
             </select>
             <div className="hint mt-8">Ritasi yang kamu catat setelah ini dicatat atas excavator yang dipilih. Ritasi sebelumnya tidak berubah. Pilihan dilepas otomatis saat kamu logout.</div>
             <button className="auth-submit mt-12" disabled={saving} onClick={save}>{saving ? "Menyimpan..." : "Simpan dan Kembali"}</button>
-            <button className="btn btn-secondary mt-8" onClick={() => router.push("/")}>Kembali ke Input Ritasi</button>
           </div>
         ) : (
           <div className="card">
@@ -115,7 +113,6 @@ export default function Pengaturan() {
               </label>
             ))}
             <button className="auth-submit mt-12" disabled={saving} onClick={save}>{saving ? "Menyimpan..." : (wajib ? "Simpan dan Lanjut" : "Simpan Lokasi")}</button>
-            {!wajib && <button className="btn btn-secondary mt-8" onClick={() => router.push("/")}>Kembali ke Beranda</button>}
           </div>
         )}
         <div className="app-footer">designed by Najib.dev</div>
