@@ -199,3 +199,20 @@ body, .v4-page { background: var(--bg); color: var(--text); }
 .pagebar-back { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--surface-alt); color: var(--text); font-size: 26px; line-height: 1; text-decoration: none; }
 .pagebar-back:active { transform: scale(0.95); }
 @media (min-width: 900px) { .pagebar-back { display: none; } }
+
+/* ===== Operator: aplikasi satu layar, tanpa menu ganda ===== */
+.topbar-operator { display: none; }
+body:has(.topbar-operator) .v4-page { padding-left: 0; }
+body:has(.topbar-operator) .container { padding-bottom: 28px; }
+.pagebar-op .pagebar-tile, .pagebar-op .pagebar-sub, .pagebar-op .pagebar-crumb,
+.pagebar-op .topbar-role-badge, .pagebar-op .pagebar-user, .pagebar-op .topbar-avatar { display: none; }
+.pagebar-op .pagebar-h1 { font-size: 18px; }
+.pagebar-op .pagebar-chip { max-width: 54vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===== Operator: satu layar kerja, tanpa menu dobel ===== */
+body.op-solo .topbar { display: none; }
+body.op-solo .v4-page { padding-left: 0; }
+body.op-solo .container { max-width: 560px; padding-bottom: 32px; }
+body.op-solo .pagebar-right .topbar-role-badge, body.op-solo .pagebar-user, body.op-solo .pagebar-crumb { display: none; }
+body.op-solo .toast-stack { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+.pagebar-chip-warn { background: #fff4d6; color: #8a5a00; border-color: #f0d58a; }
