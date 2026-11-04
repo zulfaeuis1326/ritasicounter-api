@@ -169,14 +169,13 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
             <ScreenIcon />
           </a>
         )}
-        {(isOperator || isPengawas) && (
+        {(isOperator || isPengawas) && page !== "pengaturan" && (
           <a className="pagebar-chip" href="/pengaturan" title="Ubah di Pengaturan">
             {isOperator ? "Excavator: " + (authUser.fleet_name || "belum dipilih") : "PIT: " + (authUser.work_pit_name || "Semua")}
           </a>
         )}
         <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
         <span className="pagebar-user">{authUser.username}</span>
-        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
         <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
           <LogoutIcon />
         </button>
