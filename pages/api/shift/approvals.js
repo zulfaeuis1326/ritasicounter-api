@@ -7,6 +7,12 @@ const { OFFSET_HOURS } = require("../../../lib/time");
 const LOCAL = (col) => `((${col} AT TIME ZONE 'UTC') + make_interval(hours => $1::int))`;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+// Catatan audit bersifat tambahan. Kalau gagal, perubahan di database sudah terjadi,
+// jadi jangan balas error ke klien (dulu: layar menampilkan "gagal" padahal sudah tersimpan).
+async function safeLog(userId, action, detail) {
+  try { await logActivity(userId, action, detail); } catch (e) { console.error("logActivity gagal:", e); }
+}
+
 // Daftar approval shift: paging berbasis kursor (tidak memuat semua riwayat), filter, dan setujui banyak sekaligus.
 export default async function handler(req, res) {
   try {
@@ -89,7 +95,7 @@ export default async function handler(req, res) {
            RETURNING id`,
           [user.id, ids]
         );
-        await logActivity(user.id, "approve_shifts", { requested: ids.length, approved: r.rowCount, ids: r.rows.map((x) => x.id) });
+        await safeLog(user.id, "approve_shifts", { requested: ids.length, approved: r.rowCount, ids: r.rows.map((x) => x.id) });
         return res.status(200).json({ ok: true, updated: r.rowCount, ids: r.rows.map((x) => x.id) });
       }
 
@@ -100,7 +106,7 @@ export default async function handler(req, res) {
            WHERE id = ANY($1::int[]) AND review_status = 'approved' RETURNING id`,
           [ids]
         );
-        await logActivity(user.id, "revoke_shift_approval", { requested: ids.length, revoked: r.rowCount, ids: r.rows.map((x) => x.id) });
+        await safeLog(user.id, "revoke_shift_approval", { requested: ids.length, revoked: r.rowCount, ids: r.rows.map((x) => x.id) });
         return res.status(200).json({ ok: true, updated: r.rowCount, ids: r.rows.map((x) => x.id) });
       }
       return res.status(400).json({ error: "Aksi tidak dikenal" });
