@@ -95,6 +95,49 @@
 .fl-actionbar-row { display: flex; gap: 8px; }
 .fl-actionbar-row .field-input { flex: 1; min-width: 0; }
 
+.pit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.pit-row:hover { border-color: #d7e0ef; box-shadow: 0 8px 20px rgba(31, 41, 55, 0.06); }
+.pit-row--editing { border-color: rgba(47, 111, 220, 0.35); box-shadow: 0 0 0 3px rgba(47, 111, 220, 0.08); }
+.pit-row__main,
+.pit-row__edit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.pit-row__main { justify-content: space-between; }
+.pit-row__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pit-row__actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.pit-row__btn { min-height: 36px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
+.pit-row__btn-danger {
+  background: rgba(229, 86, 109, 0.12);
+  border-color: rgba(229, 86, 109, 0.35);
+  color: var(--danger);
+}
+.pit-row__btn-danger:hover:not(:disabled) { background: rgba(229, 86, 109, 0.18); }
+.pit-row__input { flex: 1; min-width: 0; }
+@media (max-width: 680px) {
+  .pit-row,
+  .pit-row__main,
+  .pit-row__edit { flex-direction: column; align-items: stretch; }
+  .pit-row__actions { width: 100%; margin-left: 0; }
+  .pit-row__btn { flex: 1; }
+}
+
 /* ===== Pengaturan (pilih lokasi PIT / excavator) ===== */
 .pick-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; margin: 0 0 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; }
 .pick-row input { width: 22px; height: 22px; flex: none; accent-color: var(--accent); }

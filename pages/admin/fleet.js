@@ -41,6 +41,8 @@ export default function KelolaFleet() {
   const [newFleetPit, setNewFleetPit] = useState("");
   // tab PIT
   const [newPitName, setNewPitName] = useState("");
+  const [editingPitId, setEditingPitId] = useState(null);
+  const [pitEditName, setPitEditName] = useState("");
   // tab Tambah HD
   const [bulkNames, setBulkNames] = useState("");
   const [addFleet, setAddFleet] = useState("");
@@ -156,6 +158,34 @@ export default function KelolaFleet() {
     } catch (err) { fail(err); } finally { setSaving(false); }
   }
 
+  async function saveEditPit(pit) {
+    const name = pitEditName.trim();
+    if (!name) {
+      setBanner({ type: "error", text: "Nama lokasi wajib diisi." });
+      return;
+    }
+    setSaving(true);
+    try {
+      await api("PUT", "/api/pits", { id: pit.id, name });
+      await loadAll();
+      setBanner({ type: "ok", text: "Lokasi " + name.toUpperCase() + " berhasil diperbarui." });
+      setEditingPitId(null); setPitEditName("");
+    } catch (err) { fail(err); } finally { setSaving(false); }
+  }
+
+  async function deletePit(pit) {
+    if (!window.confirm("Hapus lokasi " + pit.name + "?")) return;
+    setSaving(true);
+    try {
+      await api("DELETE", "/api/pits", { id: pit.id });
+      await loadAll();
+      setBanner({ type: "ok", text: "Lokasi " + pit.name + " dihapus dari daftar." });
+      if (editingPitId === pit.id) {
+        setEditingPitId(null); setPitEditName("");
+      }
+    } catch (err) { fail(err); } finally { setSaving(false); }
+  }
+
   // ---------- Tambah HD ----------
   async function addUnits(e) {
     e.preventDefault();
@@ -263,10 +293,30 @@ export default function KelolaFleet() {
             <div className="card">
               <h2 className="sec-title-icon">Lokasi (PIT)</h2>
               {pits.map((p) => (
-                <div key={p.id} className="fl-row">
-                  <span className="fl-name">{p.name}</span>
-                  <span className="fl-badge">{fleets.filter((f) => f.pit_id === p.id).length} PC</span>
-                  <span className="fl-badge">{units.filter((u) => u.pit_id === p.id).length} HD</span>
+                <div key={p.id} className={"pit-row " + (editingPitId === p.id ? "pit-row--editing" : "")}>
+                  {editingPitId === p.id ? (
+                    <div className="pit-row__edit">
+                      <input className="field-input pit-row__input" value={pitEditName} onChange={(e) => setPitEditName(e.target.value)} />
+                      <div className="pit-row__actions">
+                        <button className="btn btn-primary pit-row__btn" type="button" disabled={saving || !pitEditName.trim()} onClick={() => saveEditPit(p)}>{saving ? "Menyimpan..." : "Simpan"}</button>
+                        <button className="btn btn-secondary pit-row__btn" type="button" disabled={saving} onClick={() => { setEditingPitId(null); setPitEditName(""); }}>Batal</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="pit-row__main">
+                        <span className="fl-name">{p.name}</span>
+                        <div className="pit-row__meta">
+                          <span className="fl-badge">{fleets.filter((f) => f.pit_id === p.id).length} PC</span>
+                          <span className="fl-badge">{units.filter((u) => u.pit_id === p.id).length} HD</span>
+                        </div>
+                      </div>
+                      <div className="pit-row__actions">
+                        <button className="btn btn-secondary pit-row__btn" type="button" disabled={saving} onClick={() => { setEditingPitId(p.id); setPitEditName(p.name); }}>Edit</button>
+                        <button className="btn btn-danger pit-row__btn pit-row__btn-danger" type="button" onClick={() => deletePit(p)} disabled={saving}>Hapus</button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

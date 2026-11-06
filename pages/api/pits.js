@@ -41,13 +41,41 @@ export default async function handler(req, res) {
       }
     }
 
+    if (req.method === "PUT") {
+      const { id, name } = req.body || {};
+      if (!id || !name || !name.trim()) {
+        return res.status(400).json({ error: "ID dan nama lokasi wajib diisi" });
+      }
+      try {
+        const result = await pool.query(
+          `UPDATE pits SET name = $1 WHERE id = $2 AND active = true RETURNING id, name`,
+          [name.trim().toUpperCase(), id]
+        );
+        if (result.rowCount === 0) {
+          return res.status(404).json({ error: "Lokasi tidak ditemukan" });
+        }
+        return res.status(200).json(result.rows[0]);
+      } catch (err) {
+        if (err.code === "23505") {
+          return res.status(409).json({ error: "Lokasi dengan nama itu sudah ada" });
+        }
+        throw err;
+      }
+    }
+
     if (req.method === "DELETE") {
       const { id } = req.body || {};
-      await pool.query(`UPDATE pits SET active = false WHERE id = $1`, [id]);
+      if (!id) {
+        return res.status(400).json({ error: "ID lokasi wajib diisi" });
+      }
+      const result = await pool.query(`UPDATE pits SET active = false WHERE id = $1 AND active = true RETURNING id`, [id]);
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Lokasi tidak ditemukan" });
+      }
       return res.status(200).json({ ok: true });
     }
 
-    res.setHeader("Allow", ["GET", "POST", "DELETE"]);
+    res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
     return res.status(405).end();
   } catch (err) {
     console.error("Error di /api/pits:", err);
