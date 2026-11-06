@@ -1,0 +1,199 @@
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { ROLE_LABEL } from "@/lib/roles";
+
+function LogoutIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+function CollapseIcon({ collapsed }) {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsed ? "rotate(180deg)" : "none" }}>
+      <polyline points="15 6 9 12 15 18" />
+    </svg>
+  );
+}
+function ClickIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 3v3M3 9h3M4.5 4.5l2 2M18.5 4.5l-2 2" />
+      <path d="M12 12l9 3-4 2-2 4-3-9z" />
+    </svg>
+  );
+}
+function SlidersIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="17" x2="20" y2="17" />
+      <circle cx="9" cy="7" r="2.2" fill="var(--surface)" /><circle cx="15" cy="17" r="2.2" fill="var(--surface)" />
+    </svg>
+  );
+}
+function CheckIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
+    </svg>
+  );
+}
+function ChartIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="4" y1="20" x2="20" y2="20" />
+      <rect x="6" y="12" width="3" height="8" /><rect x="14" y="8" width="3" height="12" /><rect x="10.5" y="4" width="3" height="16" />
+    </svg>
+  );
+}
+function TruckIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="7" width="13" height="10" /><path d="M14 10h4l4 4v3h-8z" />
+      <circle cx="6" cy="19" r="1.6" /><circle cx="17" cy="19" r="1.6" />
+    </svg>
+  );
+}
+function UsersIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" />
+      <circle cx="17.5" cy="8.5" r="2.4" /><path d="M16.5 14.2c2.6 0.4 4.5 2.4 4.5 5.3" />
+    </svg>
+  );
+}
+
+const SIDEBAR_KEY = "rc_sidebar_collapsed";
+
+export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, onLogout, currentPage }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const page = currentPage || "input-ritasi";
+  const homeLabel = isOperator ? "Input Ritasi" : "Beranda";
+  const router = useRouter();
+
+  // Operator hanya punya satu layar kerja (Input Ritasi). Sidebar dan bilah menu bawah disembunyikan lewat
+  // kelas ini; satu-satunya jalan ke Pengaturan adalah chip Unit dan Excavator di bilah judul.
+  useEffect(function () {
+    if (!isOperator) return;
+    document.body.classList.add("op-solo");
+    return function () { document.body.classList.remove("op-solo"); };
+  }, [isOperator]);
+  const isPengawas = canMonitorAll && !isAdmin;
+
+  // Pengawas wajib memilih lokasi PIT kerja setiap kali login sebelum memakai aplikasi.
+  useEffect(function () {
+    if (authUser && authUser.role === "pengawas" && !authUser.work_set && router.pathname !== "/pengaturan") {
+      router.replace("/pengaturan?wajib=1");
+    }
+  }, [authUser, router]);
+
+  useEffect(function () {
+    const saved = window.localStorage.getItem(SIDEBAR_KEY) === "1";
+    setCollapsed(saved);
+    document.body.classList.toggle("sidebar-collapsed", saved);
+  }, []);
+
+  function handleToggleSidebar() {
+    setCollapsed(function (prev) {
+      const next = !prev;
+      window.localStorage.setItem(SIDEBAR_KEY, next ? "1" : "0");
+      document.body.classList.toggle("sidebar-collapsed", next);
+      return next;
+    });
+  }
+
+  function NavItem({ id, href, label, icon, show }) {
+    if (show === false) return null;
+    const isCurrent = page === id;
+    const content = (
+      <>
+        <span className="topbar-nav-icon">{icon}</span>
+        <span className="topbar-nav-label">{label}</span>
+      </>
+    );
+    if (isCurrent) return <span className="topbar-nav-current" title={label}>{content}</span>;
+    return <a href={href} title={label}>{content}</a>;
+  }
+
+  // Judul dan keterangan halaman untuk bilah di atas konten
+  const META = {
+    "input-ritasi": { title: homeLabel, sub: isOperator ? "Catat setiap ritasi unitmu" : "Pantau ritasi shift yang berjalan", icon: <ClickIcon /> },
+    pengaturan: { title: "Pengaturan", sub: isOperator ? "Pilih excavator tempat kamu memuat" : "Pilih lokasi PIT tempat kamu bertugas", icon: <SlidersIcon /> },
+    catat: { title: "Catat Ritasi", sub: "Input ritasi per hauler", icon: <TruckIcon /> },
+    dashboard: { title: "Dashboard", sub: "Ringkasan produksi", icon: <ChartIcon /> },
+    approval: { title: "Approval Shift", sub: "Setujui shift yang sudah ditutup", icon: <CheckIcon /> },
+    fleet: { title: "Kelola Fleet", sub: "Penempatan HD, PC, dan lokasi", icon: <TruckIcon /> },
+    akun: { title: "Kelola Akun", sub: "Persetujuan dan peran pengguna", icon: <UsersIcon /> },
+  };
+  const meta = META[page] || { title: "RitasiCounter", sub: "", icon: <ClickIcon /> };
+
+  return (
+    <>
+    <header className={"topbar" + (isOperator ? " topbar-operator" : "")}>
+      <div className="topbar-logo">
+        <span className="topbar-mark">
+          <img src="/logo.png" alt="Logo" className="topbar-mark-img" onError={function (e) { e.target.style.display = "none"; }} />
+        </span>
+        <span className="topbar-logo-text">RitasiCounter</span>
+      </div>
+
+      <button className="topbar-collapse-btn" onClick={handleToggleSidebar} title={collapsed ? "Buka sidebar" : "Ciutkan sidebar"} aria-label="Toggle sidebar">
+        <CollapseIcon collapsed={collapsed} />
+      </button>
+
+      <nav className="topbar-nav">
+        <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
+        <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
+        <NavItem id="fleet" href="/admin/fleet" label="Fleet" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="akun" href="/admin/operators" label="Akun" icon={<UsersIcon />} show={isAdmin} />
+      </nav>
+
+      {isOperator && (
+        <div className="side-card">
+            <div className="side-card-title">Excavator</div>
+            <div className="side-card-text">{authUser.fleet_name || "Belum dipilih. Pilih tempat kamu memuat."}</div>
+            <a className="side-card-btn" href="/pengaturan">Atur excavator</a>
+        </div>
+      )}
+
+      <div className="topbar-spacer" />
+
+      <div className="topbar-footer">
+        <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
+        <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
+          <LogoutIcon />
+        </button>
+        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
+      </div>
+    </header>
+
+    <div className={"pagebar" + (isOperator ? " pagebar-op" : "")}>
+      <div className="pagebar-title">
+        {page !== "input-ritasi" && <a className="pagebar-back" href="/" aria-label="Kembali ke beranda">&#8249;</a>}
+        <span className="pagebar-tile">{meta.icon}</span>
+        <div className="pagebar-text">
+          <h1 className="pagebar-h1">{meta.title}</h1>
+          {meta.sub && <div className="pagebar-sub">{meta.sub}</div>}
+        </div>
+      </div>
+      <div className="pagebar-right">
+        <nav className="pagebar-crumb" aria-label="Breadcrumb"><span>Beranda</span><span>/</span><b>{meta.title}</b></nav>
+        {(isOperator || isPengawas) && !(isOperator && currentPage === "pengaturan") && (
+          <a className={"pagebar-chip" + (isOperator && !authUser.fleet_name ? " pagebar-chip-warn" : "")} href="/pengaturan" title="Ubah di Pengaturan">
+            {isOperator ? (authUser.unit_name ? authUser.unit_name + " · " : "") + (authUser.fleet_name || "Pilih excavator") : "PIT: " + (authUser.work_pit_name || "Semua")}
+          </a>
+        )}
+        <span className="topbar-role-badge">{(ROLE_LABEL[authUser.role] || authUser.role).toUpperCase()}</span>
+        <span className="pagebar-user">{authUser.username}</span>
+        <div className="topbar-avatar">{authUser.username.charAt(0).toUpperCase()}</div>
+        <button className="topbar-iconbtn" onClick={onLogout} title="Logout" aria-label="Logout">
+          <LogoutIcon />
+        </button>
+      </div>
+    </div>
+    </>
+  );
+}

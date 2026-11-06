@@ -1,0 +1,142 @@
+/* Kelas utilitas (pengganti style inline). !important supaya setara dengan perilaku style inline lama. */
+.mt-8{margin-top:8px!important}.mt-10{margin-top:10px!important}.mt-12{margin-top:12px!important}.mt-14{margin-top:14px!important}.mt-16{margin-top:16px!important}
+.mb-0{margin-bottom:0!important}.mb-6{margin-bottom:6px!important}.mb-8{margin-bottom:8px!important}.mb-12{margin-bottom:12px!important}
+.ml-6{margin-left:6px!important}
+.fw-700{font-weight:700!important}.flex-1{flex:1!important}.d-flex{display:flex!important}.gap-8{gap:8px!important}
+.w-auto{width:auto!important}.px-14{padding:0 14px!important}.px-16{padding:0 16px!important}
+.bg-transparent{background:transparent!important}
+.c-danger{color:var(--danger)!important}.c-muted{color:var(--text-muted)!important}
+.ta-right{text-align:right!important}.ta-center{text-align:center!important}
+
+/* Rekap per fleet */
+.fleet-tools{display:flex;gap:8px;margin:0 0 10px}
+.rekap-table .fleet-row{cursor:pointer;background:var(--surface-alt)!important;font-weight:700}
+.rekap-table .fleet-row:hover{background:var(--accent-soft)!important}
+.rekap-table .fleet-row td:first-child{background:var(--surface-alt)}
+.fleet-caret{display:inline-block;margin-right:8px;color:var(--accent-strong)}
+.fleet-caret.open{transform:rotate(90deg)}
+.fleet-meta{margin-left:10px;font-weight:500;font-size:12px;color:var(--text-muted)}
+
+/* ===== Halaman Catat Ritasi (pengawas) ===== */
+.catat-label { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); margin: 10px 0 6px; }
+.catat-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+.chip { min-height: 44px; padding: 0 14px; background: var(--surface); color: var(--text); border: 2px solid var(--text); border-radius: 0; font-weight: 600; cursor: pointer; }
+.chip b { margin-left: 6px; font-family: var(--font-mono); }
+.chip.active { background: var(--accent); color: var(--accent-contrast); }
+.catat-row { display: flex; gap: 10px; margin: 0 0 10px; flex-wrap: wrap; }
+.catat-field { display: flex; flex-direction: column; min-width: 140px; }
+.catat-grow { flex: 1; }
+.catat-field select, .catat-field input { min-height: 44px; }
+.catat-pit { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 0 8px; padding: 10px 14px; background: var(--text); color: var(--surface); font-family: var(--font-display); font-size: 18px; letter-spacing: 1px; border-top: 6px solid var(--accent); }
+.catat-pit b { font-family: var(--font-mono); color: var(--accent); }
+.fleet-card { background: var(--surface); border: 2px solid var(--text); margin: 0 0 10px; }
+.fleet-head { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 0 14px; background: var(--surface-alt); border: 0; font-size: 16px; text-align: left; cursor: pointer; }
+.fleet-head .fleet-name { flex: 1; font-weight: 700; }
+.fleet-head .fleet-total { font-family: var(--font-mono); font-size: 20px; }
+.hauler-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--border); }
+.hauler-info { display: flex; flex-direction: column; min-width: 0; }
+.hauler-name { font-weight: 700; font-size: 16px; }
+.hauler-info small { color: var(--text-muted); font-family: var(--font-mono); font-size: 12px; }
+.hauler-btns { display: flex; gap: 6px; flex: none; }
+.qty-btn { min-width: 52px; min-height: 52px; background: var(--accent); color: var(--accent-contrast); border: 2px solid var(--text); border-radius: 0; font-family: var(--font-mono); font-size: 17px; font-weight: 700; cursor: pointer; }
+.qty-btn:active:not(:disabled) { transform: scale(0.95); }
+.qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.qty-more { background: var(--surface); color: var(--text); }
+
+/* ===== Keterangan & laporan WhatsApp ===== */
+.note-link { align-self: flex-start; max-width: 100%; margin-top: 4px; padding: 4px 0; background: none; border: 0; color: var(--accent-strong); font: 600 13px var(--font-body); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.wa-btn { min-height: 48px; padding: 0 18px; background: var(--ok); color: #fff; border: 2px solid var(--text); border-radius: 0; font-weight: 700; font-size: 15px; cursor: pointer; }
+.wa-panel { margin-top: 8px; padding: 12px; background: var(--surface-alt); border: 2px solid var(--text); }
+.wa-check { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 14px; }
+.wa-check input { width: 22px; min-height: 22px; height: 22px; }
+.wa-text { width: 100%; margin: 8px 0 10px; padding: 10px; border: 2px solid var(--text); background: var(--surface); color: var(--text); font: 13px/1.45 var(--font-mono); resize: vertical; }
+
+/* ===== Kelola Fleet (penempatan massal) ===== */
+.fl-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; margin: 0 0 12px; }
+.fl-summary div { padding: 8px 10px; background: var(--surface); border: 2px solid var(--text); }
+.fl-summary b { display: block; font: 700 22px var(--font-mono); }
+.fl-summary span { font-size: 11px; color: var(--text-muted); }
+.fl-summary .fl-warn { background: var(--amber-soft); border-color: var(--amber); }
+.fl-banner { margin: 0 0 12px; padding: 12px 14px; border: 2px solid var(--text); font-weight: 600; }
+.fl-banner-ok { background: #e3f4e8; border-color: var(--ok); color: #1f6b3a; }
+.fl-banner-warn { background: var(--amber-soft); border-color: var(--amber); }
+.fl-banner-error { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+.fl-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 8px 4px; border-top: 1px solid var(--border); cursor: pointer; }
+.fl-row input[type=checkbox] { width: 22px; height: 22px; flex: none; }
+.fl-name { flex: 1; min-width: 90px; font-weight: 700; }
+.fl-badge { padding: 3px 8px; background: var(--surface-alt); border: 1px solid var(--border); font: 600 12px var(--font-mono); }
+.fl-badge-empty { background: transparent; color: var(--text-muted); border-style: dashed; }
+.fl-pcrow { padding: 12px 0; border-top: 1px solid var(--border); }
+.fl-pcrow .fl-name { margin-bottom: 6px; }
+.fl-actionbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 4px solid var(--accent); box-shadow: 0 -4px 16px rgba(36, 31, 21, 0.18); display: flex; flex-direction: column; gap: 8px; }
+.fl-actionbar-title { font: 700 16px var(--font-display); letter-spacing: 1px; }
+.fl-actionbar-row { display: flex; gap: 8px; }
+.fl-actionbar-row .field-input { flex: 1; min-width: 0; }
+
+.pit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.pit-row:hover { border-color: #d7e0ef; box-shadow: 0 8px 20px rgba(31, 41, 55, 0.06); }
+.pit-row--editing { border-color: rgba(47, 111, 220, 0.35); box-shadow: 0 0 0 3px rgba(47, 111, 220, 0.08); }
+.pit-row__main,
+.pit-row__edit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.pit-row__main { justify-content: space-between; }
+.pit-row__meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pit-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.pit-row__btn {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+.pit-row__btn-danger {
+  background: rgba(229, 86, 109, 0.12);
+  border-color: rgba(229, 86, 109, 0.35);
+  color: var(--danger);
+}
+.pit-row__btn-danger:hover:not(:disabled) { background: rgba(229, 86, 109, 0.18); }
+.pit-row__input {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 680px) {
+  .pit-row,
+  .pit-row__main,
+  .pit-row__edit {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pit-row__actions {
+    width: 100%;
+    margin-left: 0;
+  }
+  .pit-row__btn { flex: 1; }
+}
+
+/* ===== Pengaturan (pilih lokasi PIT / excavator) ===== */
+.pick-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 10px 14px; margin: 0 0 8px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; }
+.pick-row input { width: 22px; height: 22px; flex: none; accent-color: var(--accent); }
+.pick-row.active { background: var(--accent-soft); border-color: var(--accent); }
+.pick-name { flex: 1; font-weight: 700; }

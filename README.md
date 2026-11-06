@@ -6,22 +6,48 @@ Aplikasi pencatat ritasi (jumlah rit/trip) hauler tambang per jam — real-time,
 
 - **Framework**: Next.js 14 (pages router) — frontend & backend API jadi satu project
 - **Database**: PostgreSQL
-- **Auth**: custom scrypt + HMAC session (tanpa library eksternal, lihat `lib/auth.js`)
+- **Auth**: custom scrypt + HMAC session (tanpa library eksternal, lihat `src/lib/auth.js`)
 - **Export laporan**: exceljs (format Excel)
 - **Grafik**: recharts
 
 ## Struktur Folder
 
 ```
-components/       -> komponen React yang dipakai berulang (Combobox, ThemeToggle)
-lib/               -> logic backend (db, auth, shift, recap, roles, dll)
-pages/             -> halaman + API routes (Next.js pages router)
-  admin/           -> halaman khusus admin/pengawas/superadmin
-  api/             -> semua endpoint backend
-styles/            -> CSS dipecah per bagian (base, components, auth, layout, panels, display, extras, tweaks) + utilities.css; urutan import ada di pages/_app.js
-public/            -> aset statis (taruh logo.png kamu di sini)
-schema.sql         -> skema database final, buat setup cepat di server baru
+src/
+  pages/            -> halaman dan API routes (Next.js Pages Router)
+    admin/          -> halaman admin/pengawas/superadmin
+    api/            -> endpoint API, dikelompokkan berdasarkan domain
+  components/       -> komponen React bersama, dikelompokkan per fitur
+  hooks/            -> React hooks bersama
+  lib/              -> akses database, autentikasi, domain, dan utilitas backend
+  styles/           -> stylesheet aplikasi, urutan import ada di src/pages/_app.js
+public/             -> aset statis (taruh logo.png kamu di sini)
+schema.sql          -> skema database final, buat setup cepat di server baru
 ```
+
+Impor internal menggunakan alias `@/` (contoh: `@/lib/auth`). Nama berkas di
+`src/pages` menentukan URL, sehingga pemindahan ke `src/` tidak mengubah URL
+halaman maupun endpoint API yang sudah dipakai.
+Output development dan production dipisah (`.next-dev` dan `.next`) agar
+menjalankan server lokal bersamaan dengan build tidak merusak aset halaman.
+
+### Routing
+
+Halaman menggunakan Next.js Pages Router. URL utama tetap:
+
+| URL | Halaman |
+|---|---|
+| `/` | Input dan rekap ritasi |
+| `/catat` | Catat ritasi |
+| `/dashboard` | Dashboard produktivitas |
+| `/pengaturan` | Pengaturan unit/lokasi |
+| `/approval` | Approval shift |
+| `/admin/fleet` | Kelola fleet |
+| `/admin/operators` | Kelola akun |
+
+Endpoint API berada di `/api/*`; endpoint autentikasi, shift, dan admin
+dikelompokkan di `src/pages/api/auth`, `src/pages/api/shift`, dan
+`src/pages/api/admin`.
 
 ## Setup di Server Baru
 
@@ -32,7 +58,7 @@ Buat database PostgreSQL baru (Railway, Supabase, Neon, VPS sendiri — bebas). 
 ```bash
 psql "postgresql://user:pass@host:5432/dbname" -f schema.sql
 ```
-Kalau dilewatin, aplikasi tetap otomatis bikin semua tabel yang dibutuhkan saat pertama kali dijalankan (lihat `lib/db.js` -> `ensureSchema()`). Tapi jalanin manual lebih cepat & langsung ngisi data PIT awal.
+Kalau dilewatin, aplikasi tetap otomatis bikin semua tabel yang dibutuhkan saat pertama kali dijalankan (lihat `src/lib/db.js` -> `ensureSchema()`). Tapi jalanin manual lebih cepat & langsung ngisi data PIT awal.
 
 ### 3. Environment Variables
 Copy `.env.example` jadi `.env` (untuk dev lokal) atau set langsung di platform hosting kamu:

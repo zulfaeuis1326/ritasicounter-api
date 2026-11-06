@@ -1,0 +1,6 @@
+const MATERIALS = ["OB", "COAL", "SOIL", "SOLU", "MUD"];
+const TONS_PER_RIT = 108;
+const TONS_PER_BCM = 1.8;
+const BCM_PER_RIT = TONS_PER_RIT / TONS_PER_BCM;
+
+module.exports = { MATERIALS, TONS_PER_RIT, TONS_PER_BCM, BCM_PER_RIT };

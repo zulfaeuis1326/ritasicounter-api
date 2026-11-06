@@ -9,7 +9,7 @@ Aplikasi pencatat ritasi (jumlah rit/trip) hauler tambang per jam. Awalnya dibua
 - **Framework**: Next.js (pages router), full-stack (frontend + API routes 1 project)
 - **Database**: PostgreSQL (Railway)
 - **Hosting**: Railway, auto-deploy dari GitHub (`github.com/zulfaeuis1326/app-ritasi-`)
-- **Auth**: custom scrypt + HMAC session (lib/auth.js)
+- **Auth**: custom scrypt + HMAC session (src/lib/auth.js)
 - **Export**: exceljs
 - **Chart**: recharts
 
@@ -46,7 +46,7 @@ Aplikasi pencatat ritasi (jumlah rit/trip) hauler tambang per jam. Awalnya dibua
   - Tabel `fleets` (PC/Loader) dengan kolom `pit_id`; tabel `units` (HD) dengan kolom `fleet_id` & `pit_id`
   - **Data roster diimport dari foto** "Setting Man Power" (dibaca manual via image crop+zoom, dikonfirmasi user) — 42 PC + 124 HD, lewat endpoint sekali-jalan `/api/admin/import-roster` (tombol "Import Sekarang" di Kelola Akun, khusus superadmin)
   - **Endpoint dedupe** (`/api/admin/dedupe-units`) buat gabungin unit/PC yang namanya dobel (beda kapitalisasi/spasi) — tombol "Bersihkan Sekarang" di Kelola Akun
-  - **Halaman "Kelola Fleet" (di-redesign total, beberapa iterasi)**: dari tabel panjang → search+dropdown → akhirnya jadi **Combobox modern kustom** (`components/Combobox.js`) — komponen shared, tap buka panel search+list (bukan dropdown/select bawaan browser). Dipakai di Kelola Fleet (pilih unit → assign PC & PIT) DAN di halaman utama (pilih Unit & pilih Jam Ritasi), gantiin `<select>` native yang jelek/kepanjangan di HP.
+  - **Halaman "Kelola Fleet" (di-redesign total, beberapa iterasi)**: dari tabel panjang → search+dropdown → akhirnya jadi **Combobox modern kustom** (`src/components/Combobox.js`) — komponen shared, tap buka panel search+list (bukan dropdown/select bawaan browser). Dipakai di Kelola Fleet (pilih unit → assign PC & PIT) DAN di halaman utama (pilih Unit & pilih Jam Ritasi), gantiin `<select>` native yang jelek/kepanjangan di HP.
   - Filter "hanya tampilkan unit yang ada ritasinya" di tabel rekap (halaman utama & dashboard) — karena 124+42 unit bikin tabel kepanjangan kalau ditampilin semua, ada toggle "tampilkan semua" kalau perlu
 - **Polling data dipercepat** — halaman utama refresh tiap 2.5 detik (dari 5 detik), dashboard tiap 6 detik (dari 15 detik), biar kerasa lebih real-time. (Catatan: ini masih polling, bukan push-based real-time/WebSocket — cukup buat skala 1 lokasi tambang saat ini.)
 - **Paket migrasi server**: `schema.sql` (skema database final siap pakai) + `README.md` (instruksi setup lengkap) + `.env.example` + source code lengkap, disiapkan buat pindah hosting.
