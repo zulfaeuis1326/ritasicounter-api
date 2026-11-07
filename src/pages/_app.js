@@ -12,6 +12,7 @@ import "@/styles/palette.css";
 import "@/styles/admin.css";
 import "@/styles/teamhub.css";
 import "@/styles/akun.css";
+import "@/styles/fleet-assign.css";
 
 export default function App({ Component, pageProps }) {
   return (
