@@ -35,6 +35,7 @@ export default function KelolaFleet() {
   const [pcChoice, setPcChoice] = useState(KEEP);
   const [pitChoice, setPitChoice] = useState(KEEP);
   const [followPit, setFollowPit] = useState(true);
+  const [assignOpen, setAssignOpen] = useState(false); // popup atur penempatan
   // tab PC
   const [fleetPitDraft, setFleetPitDraft] = useState({});
   const [newFleetName, setNewFleetName] = useState("");
@@ -58,6 +59,13 @@ export default function KelolaFleet() {
       })
       .catch(() => router.push("/login"));
   }, [router]);
+
+  useEffect(() => {
+    if (!assignOpen) return;
+    const onKey = (e) => { if (e.key === "Escape" && !saving) setAssignOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [assignOpen, saving]);
 
   // Muat ulang dari database. Mengembalikan daftar unit terbaru (dipakai untuk memeriksa hasil simpan).
   const loadAll = useCallback(async () => {
@@ -119,6 +127,7 @@ export default function KelolaFleet() {
         ? { type: "ok", text: "Tersimpan di database: " + r.updated + " unit diperbarui dan sudah dicek ulang." }
         : { type: "warn", text: "Server menjawab sukses, tapi sebagian data belum sesuai. Muat ulang halaman dan cek lagi." });
       setSelected({}); setPcChoice(KEEP); setPitChoice(KEEP);
+      setAssignOpen(false);
     } catch (e) { fail(e); } finally { setSaving(false); }
   }
 
@@ -350,20 +359,45 @@ export default function KelolaFleet() {
       </main>
 
       {tab === "hd" && selIds.length > 0 && (
-        <div className="fl-actionbar">
+        <div className="fl-actionbar fl-actionbar--compact">
           <div className="fl-actionbar-title">{selIds.length} HD dipilih</div>
-          <div className="fl-actionbar-row">
-            <select className="field-input" value={pcChoice} onChange={(e) => setPcChoice(e.target.value)}>
-              <option value={KEEP}>PC: jangan diubah</option>
-              <option value={NONE}>PC: lepas dari PC</option>
-              {fleets.map((f) => <option key={f.id} value={f.id}>PC: {f.name}</option>)}
-            </select>
-            {pitSelect(pitChoice, setPitChoice, "Lokasi: jangan diubah")}
+          <button className="btn btn-primary w-auto px-16" onClick={() => { setBanner(null); setAssignOpen(true); }}>Atur penempatan</button>
+        </div>
+      )}
+
+      {tab === "hd" && assignOpen && selIds.length > 0 && (
+        <div className="fl-modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget && !saving) setAssignOpen(false); }}>
+          <div className="fl-modal" role="dialog" aria-modal="true" aria-labelledby="fl-assign-title">
+            <h3 id="fl-assign-title" className="fl-modal-title">Atur penempatan</h3>
+            <div className="fl-modal-sub">{selIds.length} HD dipilih</div>
+            <div className="fl-modal-chips">
+              {units.filter((u) => selected[u.id]).slice(0, 8).map((u) => <span key={u.id} className="fl-modal-chip">{u.name}</span>)}
+              {selIds.length > 8 && <span className="fl-modal-chip fl-modal-chip-more">+{selIds.length - 8} lagi</span>}
+            </div>
+
+            <div className="fl-modal-field">
+              <div className="field-label mb-6">PC / Loader</div>
+              <select className="field-input" value={pcChoice} onChange={(e) => setPcChoice(e.target.value)}>
+                <option value={KEEP}>Jangan diubah</option>
+                <option value={NONE}>Lepas dari PC</option>
+                {fleets.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+            </div>
+            <div className="fl-modal-field">
+              <div className="field-label mb-6">Lokasi (PIT)</div>
+              {pitSelect(pitChoice, setPitChoice, "Jangan diubah")}
+            </div>
+            {pcChoice !== KEEP && pcChoice !== NONE && pitChoice === KEEP && (
+              <label className="wa-check"><input type="checkbox" checked={followPit} onChange={(e) => setFollowPit(e.target.checked)} /> Ikuti lokasi milik PC</label>
+            )}
+
+            {banner && banner.type !== "ok" && <div className="fl-modal-err" role="alert">{banner.text}</div>}
+
+            <div className="fl-modal-actions">
+              <button type="button" className="btn btn-secondary w-auto px-16" disabled={saving} onClick={() => setAssignOpen(false)}>Batal</button>
+              <button type="button" className="btn btn-primary w-auto px-16" disabled={saving} onClick={saveAssign}>{saving ? "Menyimpan..." : "Simpan Penempatan"}</button>
+            </div>
           </div>
-          {pcChoice !== KEEP && pcChoice !== NONE && pitChoice === KEEP && (
-            <label className="wa-check"><input type="checkbox" checked={followPit} onChange={(e) => setFollowPit(e.target.checked)} /> Ikuti lokasi milik PC</label>
-          )}
-          <button className="btn btn-primary" disabled={saving} onClick={saveAssign}>{saving ? "Menyimpan..." : "Simpan Penempatan"}</button>
         </div>
       )}
     </div>
