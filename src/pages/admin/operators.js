@@ -185,7 +185,7 @@ function OperatorsView() {
         setModal({
           ...base, title: `Reset unit "${name}"?`, message: "Dia harus memilih unit lagi saat login berikutnya.",
           confirmLabel: "Reset unit", tone: "danger",
-          onConfirm: () => runAction(u, "reset_unit", {}, `Unit ${name} direset`),
+          onConfirm: () => runAction(u, "set_unit", { unitId: null }, `Unit ${name} direset`),
         });
         break;
       case "delete":
