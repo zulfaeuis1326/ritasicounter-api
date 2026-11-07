@@ -179,6 +179,12 @@
   .akun-sheet { border-radius: 16px; padding-bottom: 20px; animation-name: akun-pop-center; }
 }
 
+/* ----- Desktop lebar: ikuti lebar .container, kartu jadi grid ----- */
+@media (min-width: 900px) {
+  .akun-wrap { max-width: none; }
+  .akun-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 12px; }
+}
+
 /* ----- Keyframes ----- */
 @keyframes akun-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes akun-fade { from { opacity: 0; } to { opacity: 1; } }

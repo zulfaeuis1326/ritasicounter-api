@@ -29,6 +29,19 @@
   .fl-modal { border-radius: 16px; padding-bottom: 20px; animation-name: fl-modal-pop; }
 }
 
+/* Desktop (>=900px): sidebar tetap 252px di kiri (72px kalau dilipat), jadi bar ringkas
+   dipusatkan di area konten sebagai "pill" melayang, tidak lagi tertutup sidebar. */
+@media (min-width: 900px) {
+  .fl-actionbar.fl-actionbar--compact {
+    left: 252px; right: 0; bottom: 20px; margin: 0 auto;
+    width: min(560px, calc(100% - 252px - 56px));
+    padding: 12px 16px; border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-md);
+  }
+  body.sidebar-collapsed .fl-actionbar.fl-actionbar--compact {
+    left: 72px; width: min(560px, calc(100% - 72px - 56px));
+  }
+}
+
 @keyframes fl-modal-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fl-modal-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
 @keyframes fl-modal-pop { from { opacity: 0; transform: scale(.95) translateY(8px); } to { opacity: 1; transform: none; } }
