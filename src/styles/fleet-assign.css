@@ -1,0 +1,38 @@
+/* Popup "Atur penempatan" di Kelola Fleet (menggantikan panel yang muncul di bawah). */
+
+/* Bar bawah jadi ringkas: jumlah terpilih + satu tombol */
+.fl-actionbar.fl-actionbar--compact { flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
+.fl-actionbar--compact .btn { flex: none; }
+
+.fl-modal-overlay {
+  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(20, 28, 43, .48); animation: fl-modal-fade .2s ease;
+}
+.fl-modal {
+  width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
+  padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface); border-radius: 18px 18px 0 0; box-shadow: var(--shadow-md);
+  animation: fl-modal-up .28s cubic-bezier(.2, .8, .2, 1);
+}
+.fl-modal-title { margin: 0; font: 700 18px/1.3 var(--font-display, inherit); text-transform: none; letter-spacing: 0; color: var(--text); }
+.fl-modal-sub { margin: 2px 0 10px; font-size: 13px; color: var(--text-muted); }
+.fl-modal-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.fl-modal-chip { padding: 4px 10px; border-radius: 999px; background: var(--surface-alt); color: var(--text); font-size: 12px; font-weight: 600; }
+.fl-modal-chip-more { background: var(--accent-soft); color: var(--accent-strong); }
+.fl-modal-field { margin-bottom: 14px; }
+.fl-modal-field .field-input { width: 100%; margin: 0; }
+.fl-modal-err { margin-top: 10px; padding: 9px 12px; border-radius: var(--radius); background: #fdecef; color: var(--danger); font-size: 13px; }
+.fl-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+@media (min-width: 640px) {
+  .fl-modal-overlay { align-items: center; }
+  .fl-modal { border-radius: 16px; padding-bottom: 20px; animation-name: fl-modal-pop; }
+}
+
+@keyframes fl-modal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fl-modal-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+@keyframes fl-modal-pop { from { opacity: 0; transform: scale(.95) translateY(8px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fl-modal-overlay, .fl-modal { animation: none !important; }
+}
