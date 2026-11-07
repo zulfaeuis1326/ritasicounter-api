@@ -1,0 +1,198 @@
+/* ===== Kelola Akun: kartu, modal, menu + motion =====
+   Dimuat terakhir di src/pages/_app.js. Hanya warna solid (sesuai admin.css).
+   Semua animasi dimatikan lewat prefers-reduced-motion di bagian paling bawah. */
+
+.akun-wrap { max-width: 920px; margin: 0 auto; }
+
+/* ----- Toolbar: cari + filter ----- */
+.akun-toolbar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.akun-search { position: relative; display: flex; align-items: center; }
+.akun-search svg { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+.akun-search input {
+  width: 100%; margin: 0; padding: 11px 14px 11px 36px; font-size: 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  color: var(--text); transition: border-color .18s, box-shadow .18s;
+}
+.akun-search input:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+
+.akun-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.akun-chips::-webkit-scrollbar { display: none; }
+.akun-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-muted); font: 600 13px/1 var(--font-display, inherit); cursor: pointer;
+  transition: background .18s, color .18s, border-color .18s, transform .12s;
+}
+.akun-chip b { font-weight: 700; font-size: 12px; opacity: .8; }
+.akun-chip:hover { border-color: var(--accent); color: var(--accent); }
+.akun-chip:active { transform: scale(.96); }
+.akun-chip.is-on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.akun-chip.is-on b { opacity: 1; }
+
+/* ----- Banner pending ----- */
+.akun-pending-banner {
+  display: flex; align-items: center; gap: 10px; width: 100%; margin-bottom: 12px;
+  padding: 11px 14px; border: 0; border-radius: var(--radius-lg); cursor: pointer;
+  background: #fff7e8; color: var(--amber); font-size: 13.5px; text-align: left;
+  animation: akun-in .4s cubic-bezier(.2, .7, .2, 1) backwards;
+  transition: transform .15s, box-shadow .15s;
+}
+.akun-pending-banner:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.akun-pending-banner span { flex: 1; }
+.akun-pending-banner em { font-style: normal; font-weight: 700; }
+.akun-pending-banner i, .akun-pending-tag i {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--amber); flex: none;
+  animation: akun-pulse 1.8s ease-in-out infinite;
+}
+
+.akun-err-banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px;
+  padding: 10px 14px; border-radius: var(--radius); background: #fdecef; color: var(--danger); font-size: 13px;
+}
+
+/* ----- Daftar & kartu akun ----- */
+.akun-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.akun-card {
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  padding: 14px; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  animation: akun-in .45s cubic-bezier(.2, .7, .2, 1) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+  transition: box-shadow .2s, transform .2s, opacity .26s;
+}
+.akun-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.akun-card.menu-open { z-index: 20; }
+.akun-card.is-pending { box-shadow: inset 3px 0 0 var(--amber), var(--shadow-sm); }
+.akun-card.is-leaving { opacity: 0; transform: translateX(28px) scale(.98); pointer-events: none; }
+
+.akun-avatar {
+  flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+  color: #fff; font: 700 14px/1 var(--font-display, inherit); letter-spacing: .02em;
+}
+.akun-main { flex: 1 1 160px; min-width: 0; }
+.akun-name { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--text); overflow-wrap: anywhere; }
+.akun-you { padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); font-size: 10.5px; font-weight: 700; }
+.akun-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 4px; }
+.akun-sub { font-size: 12px; color: var(--text-muted); }
+
+.akun-role { padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: var(--surface-alt); color: var(--text-muted); }
+.akun-role-pengawas { background: var(--accent-2-soft); color: var(--accent-2-strong); }
+.akun-role-admin { background: var(--accent-soft); color: var(--accent-strong); }
+.akun-role-superadmin { background: var(--ink); color: #fff; }
+.akun-pending-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--amber); }
+
+.akun-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.akun-select {
+  width: auto; min-width: 140px; margin: 0; padding: 8px 10px; font-size: 13px;
+  background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text);
+  transition: border-color .18s, box-shadow .18s;
+}
+.akun-select:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+
+/* ----- Tombol ----- */
+.akun-btn {
+  padding: 9px 15px; border-radius: var(--radius); border: 1px solid transparent; cursor: pointer;
+  font: 600 13px/1.1 var(--font-display, inherit); text-transform: none; letter-spacing: 0;
+  transition: background .16s, color .16s, border-color .16s, transform .12s, opacity .16s;
+}
+.akun-btn:active { transform: scale(.96); }
+.akun-btn:disabled { opacity: .6; cursor: default; }
+.akun-btn-primary { background: var(--accent); color: #fff; }
+.akun-btn-primary:hover:not(:disabled) { background: var(--accent-strong); }
+.akun-btn-ghost { background: var(--surface-alt); color: var(--text); }
+.akun-btn-ghost:hover:not(:disabled) { background: var(--border); }
+.akun-btn-ghost-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+.akun-btn-ghost-danger:hover { background: #fdecef; }
+.akun-btn-solid-danger { background: var(--danger); color: #fff; }
+.akun-btn-solid-danger:hover:not(:disabled) { background: #cf3f56; }
+
+.akun-link { background: none; border: 0; padding: 4px 2px; color: var(--accent); font-weight: 600; font-size: 12.5px; cursor: pointer; }
+.akun-link:hover { text-decoration: underline; }
+
+/* ----- Menu aksi (...) ----- */
+.akun-menu-wrap { position: relative; }
+.akun-more {
+  display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer;
+  transition: background .16s, color .16s, transform .12s;
+}
+.akun-more:hover, .akun-more[aria-expanded="true"] { background: var(--surface-alt); color: var(--text); }
+.akun-more:active { transform: scale(.92); }
+.akun-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); min-width: 170px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  transform-origin: top right; animation: akun-pop .16s cubic-bezier(.2, .8, .2, 1);
+}
+.akun-menu-item {
+  display: block; width: 100%; padding: 9px 12px; border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text); font-size: 13.5px; text-align: left; cursor: pointer;
+  transition: background .12s;
+}
+.akun-menu-item:hover { background: var(--surface-alt); }
+.akun-menu-item.is-danger { color: var(--danger); }
+.akun-menu-item.is-danger:hover { background: #fdecef; }
+
+/* ----- Skeleton & kosong ----- */
+.akun-skel { height: 70px; border-radius: var(--radius-lg); background: var(--border); animation: akun-skel 1.2s ease-in-out infinite; animation-delay: calc(var(--i, 0) * 120ms); }
+.akun-empty { padding: 36px 12px; text-align: center; color: var(--text-muted); font-size: 14px; animation: akun-in .4s ease backwards; }
+
+/* ----- Modal ----- */
+.akun-overlay {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(20, 28, 43, .48); animation: akun-fade .2s ease;
+}
+.akun-sheet {
+  width: 100%; max-width: 440px; padding: 22px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface); border-radius: 18px 18px 0 0; box-shadow: var(--shadow-md);
+  animation: akun-sheet-up .28s cubic-bezier(.2, .8, .2, 1);
+}
+.akun-sheet-title { margin: 0 0 6px; font: 700 17px/1.3 var(--font-display, inherit); color: var(--text); text-transform: none; letter-spacing: 0; }
+.akun-sheet-msg { margin: 0 0 14px; font-size: 13.5px; line-height: 1.5; color: var(--text-muted); }
+.akun-sheet-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+.akun-choices { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.akun-choice {
+  padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); font-weight: 600; font-size: 13.5px; cursor: pointer;
+  transition: background .16s, color .16s, border-color .16s, transform .12s;
+}
+.akun-choice:active { transform: scale(.95); }
+.akun-choice.is-on { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.akun-field { display: flex; flex-direction: column; gap: 6px; }
+.akun-field label { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.akun-field-row { display: flex; align-items: center; gap: 8px; }
+.akun-field-row input {
+  flex: 1; min-width: 0; margin: 0; padding: 11px 12px; font-size: 14px;
+  background: var(--surface); border: 1px solid #dbe2ec; border-radius: var(--radius); color: var(--text);
+  transition: border-color .18s, box-shadow .18s;
+}
+.akun-field-row input:focus { outline: none; border-color: var(--accent); box-shadow: var(--ring); }
+.akun-field > .akun-link { align-self: flex-start; }
+.akun-err { margin-top: 10px; padding: 9px 12px; border-radius: var(--radius); background: #fdecef; color: var(--danger); font-size: 13px; animation: akun-shake .3s ease; }
+
+/* ----- Desktop ----- */
+@media (min-width: 640px) {
+  .akun-toolbar { flex-direction: row; align-items: center; justify-content: space-between; }
+  .akun-search { flex: 0 1 320px; }
+  .akun-card { flex-wrap: nowrap; padding: 14px 18px; }
+  .akun-overlay { align-items: center; }
+  .akun-sheet { border-radius: 16px; padding-bottom: 20px; animation-name: akun-pop-center; }
+}
+
+/* ----- Keyframes ----- */
+@keyframes akun-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes akun-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes akun-sheet-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+@keyframes akun-pop-center { from { opacity: 0; transform: scale(.95) translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes akun-pop { from { opacity: 0; transform: scale(.92); } to { opacity: 1; transform: none; } }
+@keyframes akun-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(1.35); } }
+@keyframes akun-skel { 0%, 100% { opacity: .55; } 50% { opacity: .25; } }
+@keyframes akun-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+
+/* ----- Hormati pengaturan "kurangi gerakan" ----- */
+@media (prefers-reduced-motion: reduce) {
+  [class*="akun-"], [class*="akun-"]::before, [class*="akun-"]::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
