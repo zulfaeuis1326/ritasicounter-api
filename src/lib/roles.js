@@ -16,3 +16,6 @@ export function atLeast(role, minRole) {
   if (a === -1 || b === -1) return false;
   return a >= b;
 }
+
+// Dipakai halaman Kelola Akun dan API admin/operators.
+export const ALL_ROLES = ROLES;
