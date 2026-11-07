@@ -49,3 +49,40 @@
 @media (prefers-reduced-motion: reduce) {
   .fl-modal-overlay, .fl-modal { animation: none !important; }
 }
+
+/* ===== Daftar HD per lokasi: grup + tile ringkas (menggantikan baris panjang) ===== */
+.fl-group { margin-top: 14px; }
+.fl-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.fl-group-toggle {
+  display: flex; align-items: center; gap: 8px; min-width: 0; padding: 4px 0; border: 0; background: none;
+  color: var(--text); font: 700 14px/1.2 var(--font-display, inherit); cursor: pointer; text-align: left;
+}
+.fl-group-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fl-group-sel { padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); font-size: 11px; font-weight: 700; white-space: nowrap; }
+.fl-chev { flex: none; width: 8px; height: 8px; border-right: 2px solid var(--text-muted); border-bottom: 2px solid var(--text-muted); transform: rotate(-45deg); transition: transform .18s ease; }
+.fl-chev.is-open { transform: rotate(45deg); }
+.fl-group-all { display: inline-flex; align-items: center; gap: 6px; flex: none; font-size: 12.5px; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+
+.fl-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.fl-tile {
+  position: relative; display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 46px;
+  padding: 7px 22px 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+  cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+  transition: background .14s, border-color .14s, transform .1s;
+}
+.fl-tile input { position: absolute; opacity: 0; pointer-events: none; }
+.fl-tile:hover { border-color: var(--accent); }
+.fl-tile:active { transform: scale(.97); }
+.fl-tile:focus-within { box-shadow: var(--ring); }
+.fl-tile-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.25; overflow-wrap: anywhere; }
+.fl-tile-pc { font-size: 10.5px; font-weight: 700; color: var(--accent-2-strong); }
+.fl-tile.is-on { border-color: var(--accent); background: var(--accent-soft); }
+.fl-tile.is-on .fl-tile-name { color: var(--accent-strong); }
+.fl-tile.is-on::after { content: "\2713"; position: absolute; top: 5px; right: 7px; font-size: 11px; font-weight: 700; color: var(--accent-strong); }
+
+@media (min-width: 900px) {
+  .fl-tiles { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fl-tile, .fl-chev { transition: none !important; }
+}
