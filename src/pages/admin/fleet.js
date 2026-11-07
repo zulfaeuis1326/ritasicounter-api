@@ -36,6 +36,7 @@ export default function KelolaFleet() {
   const [pitChoice, setPitChoice] = useState(KEEP);
   const [followPit, setFollowPit] = useState(true);
   const [assignOpen, setAssignOpen] = useState(false); // popup atur penempatan
+  const [collapsed, setCollapsed] = useState({}); // grup lokasi yang dilipat di daftar HD
   // tab PC
   const [fleetPitDraft, setFleetPitDraft] = useState({});
   const [newFleetName, setNewFleetName] = useState("");
@@ -97,6 +98,26 @@ export default function KelolaFleet() {
   );
   const selIds = Object.keys(selected).filter((k) => selected[k]).map(Number);
   const allShownSelected = shown.length > 0 && shown.every((u) => selected[u.id]);
+
+  // Kelompokkan HD per lokasi (PIT) supaya daftar tidak panjang berulang-ulang.
+  const groups = (() => {
+    const map = new Map();
+    shown.forEach((u) => {
+      const key = u.pit_id ? String(u.pit_id) : "none";
+      if (!map.has(key)) map.set(key, { key, name: u.pit_name || "Tanpa lokasi", units: [] });
+      map.get(key).units.push(u);
+    });
+    const order = pits.map((p) => String(p.id)).concat("none");
+    const keys = [...order.filter((k) => map.has(k)), ...[...map.keys()].filter((k) => !order.includes(k))];
+    return keys.map((k) => map.get(k));
+  })();
+
+  function toggleGroup(g) {
+    const all = g.units.every((u) => selected[u.id]);
+    const next = { ...selected };
+    g.units.forEach((u) => { next[u.id] = !all; });
+    setSelected(next);
+  }
 
   function toggleAllShown() {
     const next = { ...selected };
@@ -246,7 +267,7 @@ export default function KelolaFleet() {
         {tab === "hd" && (
           <div className="card">
             <h2 className="sec-title-icon">Penempatan HD</h2>
-            <div className="hint mb-8">Centang satu atau banyak HD, pilih PC dan/atau lokasi tujuan di bawah, lalu tekan Simpan.</div>
+            <div className="hint mb-8">Ketuk satu atau banyak HD untuk memilih, lalu tekan Atur penempatan di bawah.</div>
             <input className="field-input mb-8" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari HD atau nama PC..." />
             <div className="catat-chips">
               {[["all", "Semua (" + units.length + ")"], ["nofleet", "Belum ada PC (" + noFleet + ")"], ["nopit", "Belum ada lokasi (" + noPit + ")"]].map(([k, label]) => (
@@ -254,14 +275,35 @@ export default function KelolaFleet() {
               ))}
             </div>
             <label className="wa-check"><input type="checkbox" checked={allShownSelected} onChange={toggleAllShown} /> Pilih semua yang tampil ({shown.length})</label>
-            {shown.map((u) => (
-              <label key={u.id} className="fl-row">
-                <input type="checkbox" checked={!!selected[u.id]} onChange={(e) => setSelected({ ...selected, [u.id]: e.target.checked })} />
-                <span className="fl-name">{u.name}</span>
-                <span className={"fl-badge" + (u.fleet_name ? "" : " fl-badge-empty")}>{u.fleet_name || "tanpa PC"}</span>
-                <span className={"fl-badge" + (u.pit_name ? "" : " fl-badge-empty")}>{u.pit_name || "tanpa lokasi"}</span>
-              </label>
-            ))}
+            {groups.map((g) => {
+              const open = !collapsed[g.key] || !!q;
+              const selCount = g.units.filter((u) => selected[u.id]).length;
+              const allSel = g.units.length > 0 && selCount === g.units.length;
+              return (
+                <section key={g.key} className="fl-group">
+                  <div className="fl-group-head">
+                    <button type="button" className="fl-group-toggle" aria-expanded={open} onClick={() => setCollapsed({ ...collapsed, [g.key]: !collapsed[g.key] })}>
+                      <span className={"fl-chev" + (open ? " is-open" : "")} aria-hidden="true" />
+                      <span className="fl-group-name">{g.name}</span>
+                      <span className="fl-badge">{g.units.length} HD</span>
+                      {selCount > 0 && <span className="fl-group-sel">{selCount} dipilih</span>}
+                    </button>
+                    <label className="fl-group-all"><input type="checkbox" checked={allSel} onChange={() => toggleGroup(g)} /> Pilih grup</label>
+                  </div>
+                  {open && (
+                    <div className="fl-tiles">
+                      {g.units.map((u) => (
+                        <label key={u.id} className={"fl-tile" + (selected[u.id] ? " is-on" : "")} title={u.name + (u.fleet_name ? " · PC " + u.fleet_name : " · tanpa PC")}>
+                          <input type="checkbox" checked={!!selected[u.id]} onChange={(e) => setSelected({ ...selected, [u.id]: e.target.checked })} />
+                          <span className="fl-tile-name">{u.name}</span>
+                          {u.fleet_name && <span className="fl-tile-pc">{u.fleet_name}</span>}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              );
+            })}
             {shown.length === 0 && <div className="hint">Tidak ada HD yang cocok.{isAdmin ? " Tambahkan lewat tab Tambah HD." : ""}</div>}
           </div>
         )}
