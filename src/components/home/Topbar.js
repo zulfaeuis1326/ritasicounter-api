@@ -144,9 +144,9 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
       </button>
 
       <nav className="topbar-nav">
-        <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} />
-        <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} show={!!isOperator} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
+        <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="fleet" href="/admin/fleet" label="Fleet" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
@@ -172,7 +172,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
 
     <div className={"pagebar" + (isOperator ? " pagebar-op" : "")}>
       <div className="pagebar-title">
-        {page !== "input-ritasi" && <a className="pagebar-back" href="/" aria-label="Kembali ke beranda">&#8249;</a>}
+        {page !== "input-ritasi" && !(page === "dashboard" && !isOperator) && <a className="pagebar-back" href={isOperator ? "/" : "/dashboard"} aria-label={isOperator ? "Kembali ke beranda" : "Kembali ke dashboard"}>&#8249;</a>}
         <span className="pagebar-tile">{meta.icon}</span>
         <div className="pagebar-text">
           <h1 className="pagebar-h1">{meta.title}</h1>
@@ -180,7 +180,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
         </div>
       </div>
       <div className="pagebar-right">
-        <nav className="pagebar-crumb" aria-label="Breadcrumb"><span>Beranda</span><span>/</span><b>{meta.title}</b></nav>
+        <nav className="pagebar-crumb" aria-label="Breadcrumb">{!isOperator && page === "dashboard" ? null : <><span>{isOperator ? "Beranda" : "Dashboard"}</span><span>/</span></>}<b>{meta.title}</b></nav>
         {(isOperator || isPengawas) && !(isOperator && currentPage === "pengaturan") && (
           <a className={"pagebar-chip" + (isOperator && !authUser.fleet_name ? " pagebar-chip-warn" : "")} href="/pengaturan" title="Ubah di Pengaturan">
             {isOperator ? (authUser.unit_name ? authUser.unit_name + " · " : "") + (authUser.fleet_name || "Pilih excavator") : "PIT: " + (authUser.work_pit_name || "Semua")}

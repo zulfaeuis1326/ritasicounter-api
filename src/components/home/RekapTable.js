@@ -35,7 +35,7 @@ function buildHourOptions(recap) {
   });
 }
 
-export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnits, canMonitorAll, isAdmin, recap, onExport, reportHours, onSaveReportHours }) {
+export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnits, canMonitorAll, isAdmin, recap, onExport, reportHours, onSaveReportHours, toolsOnly }) {
   const [search, setSearch] = useState("");
   const [settingOpen, setSettingOpen] = useState(false);
   const [openFleets, setOpenFleets] = useState({});
@@ -95,15 +95,17 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
 
   return (
     <section className="card">
-      <h2 className="sec-title-icon">Rekap Shift Ini (per unit)</h2>
+      <h2 className="sec-title-icon">{toolsOnly ? "Laporan Shift" : "Rekap Shift Ini (per unit)"}</h2>
 
-      {isReportHour && (
+      {isReportHour && !toolsOnly && (
         <div className="report-hour-banner">
           Ini jam laporan ({String(currentHour).padStart(2, "0")}:00) — udah waktunya share rekap.
         </div>
       )}
 
       <div className="rekap-tools">
+        {!toolsOnly && (
+          <>
         <input
           className="rekap-search"
           value={search}
@@ -118,6 +120,8 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
           />
           Hanya ada ritasi
         </label>
+          </>
+        )}
         <button className="btn btn-primary rekap-share-btn" onClick={function () { setShareOpen(true); }} disabled={!recap || !recap.shift}>
           <WhatsappIcon /> Share ke WA
         </button>
@@ -158,6 +162,8 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
         </div>
       )}
 
+      {!toolsOnly && (
+        <>
       <div className="fleet-tools">
         <button className="btn btn-secondary w-auto px-14" onClick={function () { setAllFleets(true); }}>Buka semua fleet</button>
         <button className="btn btn-secondary w-auto px-14" onClick={function () { setAllFleets(false); }}>Tutup semua</button>
@@ -213,6 +219,9 @@ export default function RekapTable({ allRecapUnits, showAllUnits, setShowAllUnit
           )}
         </table>
       </div>
+
+        </>
+      )}
 
       <ShareWaModal
         open={shareOpen}
