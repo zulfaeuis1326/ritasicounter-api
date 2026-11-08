@@ -26,7 +26,7 @@
   animation-duration: 1.35s;
   animation-direction: reverse;
 }
-.pl-logo { position: relative; width: 34px; height: 34px; object-fit: contain; }
+.pl-logo { position: relative; width: 38px; height: 38px; object-fit: cover; border-radius: 50%; background: transparent; }
 
 .pl-dots { display: inline-flex; gap: 6px; }
 .pl-dots i {
