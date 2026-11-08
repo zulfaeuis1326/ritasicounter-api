@@ -4,6 +4,7 @@ import { atLeast, ROLE_LABEL } from "@/lib/roles";
 import { roleOptions } from "@/lib/akunPerms";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
 import Topbar from "@/components/home/Topbar";
+import PageLoader from "@/components/PageLoader";
 import { ToastProvider, useToast } from "@/components/Toast";
 import AkunCard from "@/components/akun/AkunCard";
 import AkunModal from "@/components/akun/AkunModal";
@@ -218,11 +219,7 @@ function OperatorsView() {
   }
 
   if (!authUser) {
-    return (
-      <div className="container">
-        <div className="card"><div className="hint">Memuat...</div></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const isAdmin = atLeast(authUser.role, "admin");

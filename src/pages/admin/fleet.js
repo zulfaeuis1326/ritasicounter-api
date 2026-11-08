@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { atLeast } from "@/lib/roles";
 import Topbar from "@/components/home/Topbar";
+import PageLoader from "@/components/PageLoader";
 
 const KEEP = "__keep";   // pilihan "jangan diubah"
 const NONE = "__none";   // pilihan "lepas / kosongkan"
@@ -80,7 +81,7 @@ export default function KelolaFleet() {
   }, [authUser, loadAll]);
 
   if (authUser === undefined || authUser === null) {
-    return <div className="container"><div className="card"><div className="hint">Memuat...</div></div></div>;
+    return <PageLoader />;
   }
   const isAdmin = atLeast(authUser.role, "admin");
 
