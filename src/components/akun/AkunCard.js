@@ -110,4 +110,30 @@ export default function AkunCard({ u, index, actor, units, leaving, onAsk, onAss
                   className="akun-more"
                   aria-haspopup="menu"
                   aria-expanded={open}
-                  aria-label={`Aksi untuk ${u.u
+                  aria-label={`Aksi untuk ${u.username}`}
+                  onClick={() => setOpen((o) => !o)}
+                >
+                  <DotsIcon />
+                </button>
+                {open && (
+                  <div className="akun-menu" role="menu">
+                    {items.map((it) => (
+                      <button
+                        key={it.k}
+                        role="menuitem"
+                        className={"akun-menu-item" + (it.danger ? " is-danger" : "")}
+                        onClick={() => { setOpen(false); onAsk(u, it.k); }}
+                      >
+                        {it.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </li>
+  );
+}
