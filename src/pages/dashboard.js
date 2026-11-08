@@ -7,6 +7,9 @@ import {
 } from "recharts";
 import { atLeast } from "@/lib/roles";
 import Topbar from "@/components/home/Topbar";
+import ShiftBanner from "@/components/home/ShiftBanner";
+import RekapTable from "@/components/home/RekapTable";
+import ShiftRowMenu from "@/components/home/ShiftRowMenu";
 import { BCM_PER_RIT, MATERIALS, TONS_PER_RIT, TONS_PER_BCM } from "@/lib/materials";
 
 function formatJamCell(h) {
@@ -63,6 +66,10 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [recap, setRecap] = useState(null);
   const [showAllUnits, setShowAllUnits] = useState(false);
+  const [clock, setClock] = useState("");
+  const [reportHours, setReportHours] = useState([7, 12, 19]);
+  const [pastShifts, setPastShifts] = useState([]);
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     function checkAuth() {
@@ -118,6 +125,29 @@ export default function Dashboard() {
     }, 6000);
   }, [authUser, loadData, loadRecap]);
 
+  // Jam di banner shift
+  useEffect(() => {
+    const tick = () => setClock(new Date().toLocaleTimeString("id-ID"));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Jam laporan + riwayat shift (riwayat hanya untuk admin ke atas, sesuai API)
+  useEffect(() => {
+    if (!authUser) return;
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((d) => { if (d && Array.isArray(d.reportHours)) setReportHours(d.reportHours); })
+      .catch(() => {});
+    if (atLeast(authUser.role, "admin")) {
+      fetch("/api/shift/list")
+        .then((res) => (res.ok ? res.json() : []))
+        .then((d) => setPastShifts(Array.isArray(d) ? d : []))
+        .catch(() => {});
+    }
+  }, [authUser]);
+
   const allRecapUnits = (recap && recap.units) || [];
   const visibleUnits = showAllUnits ? allRecapUnits : allRecapUnits.filter((u) => u.total > 0);
   const hiddenUnitCount = allRecapUnits.length - visibleUnits.length;
@@ -144,12 +174,63 @@ export default function Dashboard() {
 
   const isAdmin = atLeast(authUser.role, "admin");
   const canMonitorAll = atLeast(authUser.role, "pengawas");
+  const isReportHour = !!recap && recap.currentHour !== undefined && reportHours.includes(recap.currentHour);
+
+  function flash(msg) {
+    setNotice(msg);
+    setTimeout(() => setNotice(""), 4000);
+  }
+
+  function handleExport() {
+    if (!recap || !recap.shift) return;
+    window.open("/api/shift/export?shiftId=" + recap.shift.id, "_blank");
+  }
+
+  async function handleSaveReportHours(hours) {
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reportHours: hours }),
+      });
+      const d = await res.json();
+      if (!res.ok) { flash(d.error || "Gagal simpan setting"); return; }
+      setReportHours(d.reportHours);
+      flash("Jam laporan disimpan.");
+    } catch (err) {
+      flash("Gagal simpan (koneksi/server bermasalah)");
+    }
+  }
+
+  async function handleDeleteShift(id, label) {
+    if (!confirm(`Hapus history shift "${label}"? Semua data ritasi di shift ini bakal ikut kehapus permanen, gak bisa dibalikin.`)) return;
+    try {
+      const res = await fetch("/api/shift/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shiftId: id }),
+      });
+      const d = await res.json();
+      if (!res.ok) { flash(d.error || "Gagal hapus shift"); return; }
+      flash("Shift dihapus.");
+      setPastShifts((prev) => prev.filter((s) => s.id !== id));
+    } catch (err) {
+      flash("Gagal hapus (koneksi/server bermasalah)");
+    }
+  }
 
   return (
     <div className="v4-page">
       <Topbar authUser={authUser} canMonitorAll={canMonitorAll} isAdmin={isAdmin} isOperator={false} onLogout={handleLogout} currentPage="dashboard" />
 
       <main className="container">
+      <ShiftBanner recap={recap} recapError={null} clock={clock} />
+      {isReportHour && (
+        <div className="report-hour-banner">
+          Ini jam laporan ({String(recap.currentHour).padStart(2, "0")}:00) — udah waktunya share rekap. <a href="#laporan">Buka Laporan Shift</a>
+        </div>
+      )}
+      {notice && <div className="hint mb-8" role="status">{notice}</div>}
       <div className="dash-top">
         <div className="seg" role="tablist" aria-label="Rentang waktu">
           <button className={"seg-btn" + (range === "day" ? " active" : "")} onClick={() => setRange("day")}>7 hari</button>
@@ -345,6 +426,33 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
+
+      <div id="laporan">
+        <RekapTable
+          toolsOnly
+          allRecapUnits={allRecapUnits}
+          showAllUnits={showAllUnits}
+          setShowAllUnits={setShowAllUnits}
+          canMonitorAll={canMonitorAll}
+          isAdmin={isAdmin}
+          recap={recap}
+          onExport={handleExport}
+          reportHours={reportHours}
+          onSaveReportHours={handleSaveReportHours}
+        />
+      </div>
+
+      {isAdmin && pastShifts.length > 0 && (
+        <section className="card">
+          <h2 className="sec-title-icon">Riwayat Shift</h2>
+          {pastShifts.map((s) => (
+            <div key={s.id} className="history-row">
+              <span>{s.label}</span>
+              <ShiftRowMenu shiftId={s.id} isAdmin={isAdmin} onDelete={() => handleDeleteShift(s.id, s.label)} />
+            </div>
+          ))}
+        </section>
+      )}
 
       <div className="app-footer">designed by Najib.dev</div>
       </main>

@@ -92,6 +92,11 @@ function HomeContent() {
       .catch(function () { router.push("/login"); });
   }, [router]);
 
+  // Pengawas ke atas memakai Dashboard sebagai halaman utama. Operator tetap di halaman ini.
+  useEffect(function () {
+    if (authUser && atLeast(authUser.role, "pengawas")) router.replace("/dashboard");
+  }, [authUser, router]);
+
   // ===== Clock =====
   useEffect(function () {
     function tick() {
@@ -511,7 +516,7 @@ function HomeContent() {
     : null;
 
   // ===== Render =====
-  if (authUser === undefined) {
+  if (authUser === undefined || canMonitorAll) {
     return <div className="container"><div className="card"><div className="hint">Memuat...</div></div></div>;
   }
   if (!authUser) return null;
