@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, HardHat, Binoculars, UserCog, ShieldCheck } from "lucide-react";
 import { ROLE_LABEL } from "@/lib/roles";
 import { canTouch, roleOptions } from "@/lib/akunPerms";
+
+// Ikon avatar mengikuti role: operator, pengawas, admin, superadmin.
+const ROLE_ICON = { operator: HardHat, pengawas: Binoculars, admin: UserCog, superadmin: ShieldCheck };
 
 const TONES = ["var(--tile-blue)", "var(--tile-green)", "var(--tile-orange)", "var(--tile-red)", "var(--hue-5)"];
 function toneFor(name) {
@@ -62,7 +65,7 @@ export default function AkunCard({ u, index, actor, units, leaving, onAsk, onAss
       style={{ "--i": Math.min(index, 12) }}
     >
       <div className="akun-avatar" style={{ background: toneFor(u.username) }} aria-hidden="true">
-        {u.username.slice(0, 2).toUpperCase()}
+        {ROLE_ICON[u.role] ? (function () { const RoleIcon = ROLE_ICON[u.role]; return <RoleIcon size={21} strokeWidth={2.1} />; })() : u.username.slice(0, 2).toUpperCase()}
       </div>
 
       <div className="akun-main">
@@ -107,30 +110,4 @@ export default function AkunCard({ u, index, actor, units, leaving, onAsk, onAss
                   className="akun-more"
                   aria-haspopup="menu"
                   aria-expanded={open}
-                  aria-label={`Aksi untuk ${u.username}`}
-                  onClick={() => setOpen((o) => !o)}
-                >
-                  <DotsIcon />
-                </button>
-                {open && (
-                  <div className="akun-menu" role="menu">
-                    {items.map((it) => (
-                      <button
-                        key={it.k}
-                        role="menuitem"
-                        className={"akun-menu-item" + (it.danger ? " is-danger" : "")}
-                        onClick={() => { setOpen(false); onAsk(u, it.k); }}
-                      >
-                        {it.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </li>
-  );
-}
+                  aria-label={`Aksi untuk ${u.u
