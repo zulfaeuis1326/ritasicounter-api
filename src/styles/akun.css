@@ -170,10 +170,16 @@
 .akun-field > .akun-link { align-self: flex-start; }
 .akun-err { margin-top: 10px; padding: 9px 12px; border-radius: var(--radius); background: #fdecef; color: var(--danger); font-size: 13px; animation: akun-shake .3s ease; }
 
+/* ----- Pemilih unit (Combobox dengan search) di kartu akun ----- */
+.akun-card:focus-within { z-index: 20; }
+.akun-combo { flex: 0 0 auto; width: 190px; }
+.akun-combo .combobox-trigger { padding: 8px 12px; font-size: 13px; border-width: 1px; border-radius: var(--radius); background: var(--surface-alt); }
+.akun-combo .combobox-panel { left: auto; right: 0; width: max(100%, 240px); max-width: calc(100vw - 32px); }
+
 /* ----- Mobile: baris unit + tombol titik tiga rata dengan kolom teks (54px = avatar 42px + jarak 12px) ----- */
 @media (max-width: 639px) {
-  .akun-actions:has(> .akun-select) { flex: 1 1 calc(100% - 54px); margin-left: 54px; }
-  .akun-actions:has(> .akun-select) .akun-select { flex: 1 1 auto; min-width: 0; }
+  .akun-actions-unit { flex: 1 1 calc(100% - 54px); margin-left: 54px; }
+  .akun-actions-unit .akun-combo { flex: 1 1 auto; width: auto; min-width: 0; }
 }
 
 /* ----- Desktop ----- */

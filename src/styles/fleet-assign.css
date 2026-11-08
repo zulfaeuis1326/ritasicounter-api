@@ -20,6 +20,9 @@
 .fl-modal-chip { padding: 4px 10px; border-radius: 999px; background: var(--surface-alt); color: var(--text); font-size: 12px; font-weight: 600; }
 .fl-modal-chip-more { background: var(--accent-soft); color: var(--accent-strong); }
 .fl-modal-field { margin-bottom: 14px; }
+/* Combobox di dalam popup: panel membuka di dalam alur supaya tidak terpotong scroll popup */
+.fl-modal .combobox-panel { position: static; width: 100%; margin-top: 6px; box-shadow: none; }
+.fl-modal .combobox-list { max-height: 200px; }
 .fl-modal-field .field-input { width: 100%; margin: 0; }
 .fl-modal-err { margin-top: 10px; padding: 9px 12px; border-radius: var(--radius); background: #fdecef; color: var(--danger); font-size: 13px; }
 .fl-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
