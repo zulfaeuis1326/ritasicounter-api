@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MoreHorizontal, HardHat, Binoculars, UserCog, ShieldCheck } from "lucide-react";
 import { ROLE_LABEL } from "@/lib/roles";
+import Combobox from "@/components/Combobox";
 import { canTouch, roleOptions } from "@/lib/akunPerms";
 
 // Ikon avatar mengikuti role: operator, pengawas, admin, superadmin.
@@ -83,7 +84,7 @@ export default function AkunCard({ u, index, actor, units, leaving, onAsk, onAss
         </div>
       </div>
 
-      <div className="akun-actions">
+      <div className={"akun-actions" + (!pending && u.role === "operator" ? " akun-actions-unit" : "")}>
         {pending ? (
           <>
             <button className="akun-btn akun-btn-primary" onClick={() => onAsk(u, "approve")}>Approve</button>
@@ -92,17 +93,17 @@ export default function AkunCard({ u, index, actor, units, leaving, onAsk, onAss
         ) : (
           <>
             {u.role === "operator" && (
-              <select
-                className="akun-select"
-                aria-label={`Unit untuk ${u.username}`}
-                value={u.unit_id || ""}
-                onChange={(e) => onAssignUnit(u, e.target.value ? Number(e.target.value) : null)}
-              >
-                <option value="">Pilih unit...</option>
-                {units.map((un) => (
-                  <option key={un.id} value={un.id}>{un.name}</option>
-                ))}
-              </select>
+              <div className="akun-combo">
+                <Combobox
+                  value={u.unit_id ? String(u.unit_id) : ""}
+                  onChange={(v) => {
+                    if ((v || "") !== (u.unit_id ? String(u.unit_id) : "")) onAssignUnit(u, v ? Number(v) : null);
+                  }}
+                  options={units.map((un) => ({ value: String(un.id), label: un.name }))}
+                  placeholder="Cari unit..."
+                  emptyLabel="Pilih unit..."
+                />
+              </div>
             )}
             {items.length > 0 && (
               <div className="akun-menu-wrap" ref={menuRef}>
