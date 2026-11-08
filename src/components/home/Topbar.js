@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { ROLE_LABEL } from "@/lib/roles";
 import {
   LogOut, ChevronsLeft, MousePointerClick, SlidersHorizontal, ClipboardCheck,
-  LayoutDashboard, Truck, Users,
+  LayoutDashboard, Truck, Users, ClipboardPen,
 } from "lucide-react";
 
 function LogoutIcon() {
@@ -26,6 +26,9 @@ function ChartIcon() {
 }
 function TruckIcon() {
   return <Truck size={18} strokeWidth={2.1} />;
+}
+function CatatIcon() {
+  return <ClipboardPen size={18} strokeWidth={2.1} />;
 }
 function UsersIcon() {
   return <Users size={18} strokeWidth={2.1} />;
@@ -87,7 +90,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
   const META = {
     "input-ritasi": { title: homeLabel, sub: isOperator ? "Catat setiap ritasi unitmu" : "Pantau ritasi shift yang berjalan", icon: <ClickIcon /> },
     pengaturan: { title: "Pengaturan", sub: isOperator ? "Pilih excavator tempat kamu memuat" : "Pilih lokasi PIT tempat kamu bertugas", icon: <SlidersIcon /> },
-    catat: { title: "Catat Ritasi", sub: "Input ritasi per hauler", icon: <TruckIcon /> },
+    catat: { title: "Catat Ritasi", sub: "Input ritasi per hauler", icon: <CatatIcon /> },
     dashboard: { title: "Dashboard", sub: "Ringkasan produksi", icon: <ChartIcon /> },
     approval: { title: "Approval Shift", sub: "Setujui shift yang sudah ditutup", icon: <CheckIcon /> },
     fleet: { title: "Kelola Fleet", sub: "Penempatan HD, PC, dan lokasi", icon: <TruckIcon /> },
@@ -112,7 +115,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
       <nav className="topbar-nav">
         <NavItem id="input-ritasi" href="/" label={homeLabel} icon={<ClickIcon />} show={!!isOperator} />
         <NavItem id="dashboard" href="/dashboard" label="Dashboard" icon={<ChartIcon />} show={canMonitorAll} />
-        <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<TruckIcon />} show={canMonitorAll} />
+        <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<CatatIcon />} show={canMonitorAll} />
         <NavItem id="fleet" href="/admin/fleet" label="Fleet" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Akun" icon={<UsersIcon />} show={isAdmin} />
       </nav>
@@ -162,4 +165,4 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
     </div>
     </>
   );
-}
+            }
