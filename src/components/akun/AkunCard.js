@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { MoreHorizontal } from "lucide-react";
 import { ROLE_LABEL } from "@/lib/roles";
 import { canTouch, roleOptions } from "@/lib/akunPerms";
 
@@ -10,11 +11,7 @@ function toneFor(name) {
 }
 
 function DotsIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-    </svg>
-  );
+  return <MoreHorizontal size={18} strokeWidth={2.2} aria-hidden="true" />;
 }
 
 // onAsk(user, kind): buka modal konfirmasi. onAssignUnit(user, unitId): ganti unit langsung.
