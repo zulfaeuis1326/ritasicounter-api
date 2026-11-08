@@ -1,3 +1,5 @@
+import { InlineLoader } from "@/components/PageLoader";
+
 function ClockIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -7,7 +9,7 @@ function ClockIcon() {
 }
 
 export default function ShiftBanner({ recap, recapError, clock }) {
-  const label = recapError ? "Error: " + recapError : (recap && recap.shift ? recap.shift.label : "Memuat shift...");
+  const label = recapError ? "Error: " + recapError : (recap && recap.shift ? recap.shift.label : <InlineLoader />);
   const tz = recap && recap.tzInfo ? recap.tzInfo : "";
 
   return (
