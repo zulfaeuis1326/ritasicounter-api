@@ -1,20 +1,12 @@
 import { useEffect, useState, useRef } from "react";
+import { ChevronDown, Search } from "lucide-react";
 
 function ChevronIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
+  return <ChevronDown size={17} strokeWidth={2.3} />;
 }
 
 function SearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="7" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
+  return <Search size={16} strokeWidth={2.2} />;
 }
 
 // Combobox modern: tap buat buka panel, di panel ada search + list yang bisa di-scroll.
