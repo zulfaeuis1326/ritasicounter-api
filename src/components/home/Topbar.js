@@ -1,68 +1,34 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { ROLE_LABEL } from "@/lib/roles";
+import {
+  LogOut, ChevronsLeft, MousePointerClick, SlidersHorizontal, ClipboardCheck,
+  LayoutDashboard, Truck, Users,
+} from "lucide-react";
 
 function LogoutIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-    </svg>
-  );
+  return <LogOut size={15} strokeWidth={2.2} />;
 }
 function CollapseIcon({ collapsed }) {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsed ? "rotate(180deg)" : "none" }}>
-      <polyline points="15 6 9 12 15 18" />
-    </svg>
-  );
+  return <ChevronsLeft size={17} strokeWidth={2.2} style={{ transform: collapsed ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }} />;
 }
 function ClickIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 3v3M3 9h3M4.5 4.5l2 2M18.5 4.5l-2 2" />
-      <path d="M12 12l9 3-4 2-2 4-3-9z" />
-    </svg>
-  );
+  return <MousePointerClick size={18} strokeWidth={2.1} />;
 }
 function SlidersIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="17" x2="20" y2="17" />
-      <circle cx="9" cy="7" r="2.2" fill="var(--surface)" /><circle cx="15" cy="17" r="2.2" fill="var(--surface)" />
-    </svg>
-  );
+  return <SlidersHorizontal size={18} strokeWidth={2.1} />;
 }
 function CheckIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8.5 12.5l2.5 2.5 4.5-5" />
-    </svg>
-  );
+  return <ClipboardCheck size={18} strokeWidth={2.1} />;
 }
 function ChartIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="4" y1="20" x2="20" y2="20" />
-      <rect x="6" y="12" width="3" height="8" /><rect x="14" y="8" width="3" height="12" /><rect x="10.5" y="4" width="3" height="16" />
-    </svg>
-  );
+  return <LayoutDashboard size={18} strokeWidth={2.1} />;
 }
 function TruckIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="7" width="13" height="10" /><path d="M14 10h4l4 4v3h-8z" />
-      <circle cx="6" cy="19" r="1.6" /><circle cx="17" cy="19" r="1.6" />
-    </svg>
-  );
+  return <Truck size={18} strokeWidth={2.1} />;
 }
 function UsersIcon() {
-  return (
-    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" />
-      <circle cx="17.5" cy="8.5" r="2.4" /><path d="M16.5 14.2c2.6 0.4 4.5 2.4 4.5 5.3" />
-    </svg>
-  );
+  return <Users size={18} strokeWidth={2.1} />;
 }
 
 const SIDEBAR_KEY = "rc_sidebar_collapsed";
