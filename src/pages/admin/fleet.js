@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { atLeast } from "@/lib/roles";
 import Topbar from "@/components/home/Topbar";
 import PageLoader from "@/components/PageLoader";
+import Combobox from "@/components/Combobox";
 
 const KEEP = "__keep";   // pilihan "jangan diubah"
 const NONE = "__none";   // pilihan "lepas / kosongkan"
@@ -388,10 +389,15 @@ export default function KelolaFleet() {
             <div className="hint mb-8">Satu nama per baris. Nama yang sudah ada otomatis dilewati.</div>
             <textarea className="field-input mb-12" rows={6} value={bulkNames} onChange={(e) => setBulkNames(e.target.value)} placeholder={"HD-101\nHD-102\nHD-103"} />
             <div className="field-label mb-6">Langsung masukkan ke PC (opsional)</div>
-            <select className="field-input mb-12" value={addFleet} onChange={(e) => setAddFleet(e.target.value)}>
-              <option value="">-- Tanpa PC --</option>
-              {fleets.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-            </select>
+            <div className="mb-12">
+              <Combobox
+                value={addFleet}
+                onChange={(v) => setAddFleet(v || "")}
+                options={fleets.map((f) => ({ value: String(f.id), label: f.name }))}
+                placeholder="Cari PC..."
+                emptyLabel="-- Tanpa PC --"
+              />
+            </div>
             <div className="field-label mb-6">Lokasi (opsional)</div>
             {pitSelect(addPit, setAddPit, null)}
             <button className="auth-submit mt-12" disabled={saving || !bulkNames.trim()}>{saving ? "Menyimpan..." : "Simpan Unit"}</button>
@@ -420,11 +426,16 @@ export default function KelolaFleet() {
 
             <div className="fl-modal-field">
               <div className="field-label mb-6">PC / Loader</div>
-              <select className="field-input" value={pcChoice} onChange={(e) => setPcChoice(e.target.value)}>
-                <option value={KEEP}>Jangan diubah</option>
-                <option value={NONE}>Lepas dari PC</option>
-                {fleets.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-              </select>
+              <Combobox
+                value={pcChoice}
+                onChange={(v) => setPcChoice(v || KEEP)}
+                options={[
+                  { value: KEEP, label: "Jangan diubah" },
+                  { value: NONE, label: "Lepas dari PC" },
+                  ...fleets.map((f) => ({ value: String(f.id), label: f.name })),
+                ]}
+                placeholder="Cari PC..."
+              />
             </div>
             <div className="fl-modal-field">
               <div className="field-label mb-6">Lokasi (PIT)</div>
