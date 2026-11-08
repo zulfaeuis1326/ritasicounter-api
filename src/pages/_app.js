@@ -14,6 +14,8 @@ import "@/styles/teamhub.css";
 import "@/styles/akun.css";
 import "@/styles/fleet-assign.css";
 import "@/styles/catat.css";
+import "@/styles/loader.css";
+import RouteLoader from "@/components/RouteLoader";
 
 export default function App({ Component, pageProps }) {
   return (
@@ -27,6 +29,7 @@ export default function App({ Component, pageProps }) {
           rel="stylesheet"
         />
       </Head>
+      <RouteLoader />
       <Component {...pageProps} />
     </>
   );

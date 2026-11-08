@@ -11,6 +11,7 @@ import RekapTable from "@/components/home/RekapTable";
 import JamManualModal from "@/components/home/JamManualModal";
 import UnitSetupScreen from "@/components/home/UnitSetupScreen";
 import ShiftRowMenu from "@/components/home/ShiftRowMenu";
+import PageLoader from "@/components/PageLoader";
 
 const QUEUE_KEY = "ritasi-queue-v1";
 function readQueue() {
@@ -517,7 +518,7 @@ function HomeContent() {
 
   // ===== Render =====
   if (authUser === undefined || canMonitorAll) {
-    return <div className="container"><div className="card"><div className="hint">Memuat...</div></div></div>;
+    return <PageLoader />;
   }
   if (!authUser) return null;
 

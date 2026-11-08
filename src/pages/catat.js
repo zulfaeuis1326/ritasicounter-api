@@ -3,6 +3,7 @@ import { startPolling } from "@/lib/poll";
 import { useRouter } from "next/router";
 import { atLeast } from "@/lib/roles";
 import Topbar from "@/components/home/Topbar";
+import PageLoader, { InlineLoader } from "@/components/PageLoader";
 import { useToast } from "@/components/Toast";
 import { buildWaText } from "@/lib/waText";
 
@@ -243,7 +244,7 @@ export default function CatatRitasi() {
   }, [popup]);
 
   if (authUser === undefined || authUser === null) {
-    return <div className="container"><div className="card"><div className="hint">Memuat...</div></div></div>;
+    return <PageLoader />;
   }
 
   // ---- Area & daftar unit ----
@@ -479,7 +480,7 @@ export default function CatatRitasi() {
             <div className="ct-hist">
               <div className="catat-label">Entri terbaru unit ini</div>
               {histAll === null ? (
-                <div className="hint">Memuat...</div>
+                <div className="hint"><InlineLoader /></div>
               ) : histGroups.length === 0 ? (
                 <div className="hint">Belum ada entri di shift ini (dalam 50 entri terbaru).</div>
               ) : histGroups.map((g) => (

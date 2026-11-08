@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/router";
 import { atLeast } from "@/lib/roles";
 import Topbar from "@/components/home/Topbar";
+import PageLoader from "@/components/PageLoader";
 
 async function api(method, url, body) {
   const res = await fetch(url, {
@@ -49,7 +50,7 @@ export default function Pengaturan() {
   }, [loadAuth, loadInfo]);
 
   if (!authUser || !info) {
-    return <div className="container"><div className="card"><div className="hint">{banner ? banner.text : "Memuat..."}</div></div></div>;
+    return banner ? <div className="container"><div className="card"><div className="hint">{banner.text}</div></div></div> : <PageLoader />;
   }
   const isOperator = authUser.role === "operator";
   const wajib = !isOperator && router.query.wajib;

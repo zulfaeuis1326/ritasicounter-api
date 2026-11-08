@@ -10,6 +10,7 @@ import Topbar from "@/components/home/Topbar";
 import ShiftBanner from "@/components/home/ShiftBanner";
 import RekapTable from "@/components/home/RekapTable";
 import ShiftRowMenu from "@/components/home/ShiftRowMenu";
+import PageLoader from "@/components/PageLoader";
 import { BCM_PER_RIT, MATERIALS, TONS_PER_RIT, TONS_PER_BCM } from "@/lib/materials";
 
 function formatJamCell(h) {
@@ -160,11 +161,7 @@ export default function Dashboard() {
   const hourlyProductivity = ((data && data.hourlySeries) || []).map(function (hour) { return { ...hour, bcm: hour.total * BCM_PER_RIT }; });
 
   if (authUser === undefined || authUser === null) {
-    return (
-      <div className="container">
-        <div className="card"><div className="hint">Memuat...</div></div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   async function handleLogout() {
