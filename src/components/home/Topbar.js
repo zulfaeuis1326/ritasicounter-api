@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { ROLE_LABEL } from "@/lib/roles";
 import {
   LogOut, ChevronsLeft, MousePointerClick, SlidersHorizontal, ClipboardCheck,
-  LayoutDashboard, Truck, Users, ClipboardPen,
+  LayoutDashboard, Truck, Users, ClipboardPen, ScrollText,
 } from "lucide-react";
 
 function LogoutIcon() {
@@ -29,6 +29,9 @@ function TruckIcon() {
 }
 function CatatIcon() {
   return <ClipboardPen size={18} strokeWidth={2.1} />;
+}
+function LogIcon() {
+  return <ScrollText size={18} strokeWidth={2.1} />;
 }
 function UsersIcon() {
   return <Users size={18} strokeWidth={2.1} />;
@@ -95,6 +98,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
     approval: { title: "Approval Shift", sub: "Setujui shift yang sudah ditutup", icon: <CheckIcon /> },
     fleet: { title: "Kelola Fleet", sub: "Penempatan HD, PC, dan lokasi", icon: <TruckIcon /> },
     akun: { title: "Kelola Akun", sub: "Persetujuan dan peran pengguna", icon: <UsersIcon /> },
+    log: { title: "Log Aktivitas", sub: "Jejak aksi penting, khusus superadmin", icon: <LogIcon /> },
   };
   const meta = META[page] || { title: "RitasiCounter", sub: "", icon: <ClickIcon /> };
 
@@ -118,6 +122,7 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
         <NavItem id="catat" href="/catat" label="Catat Ritasi" icon={<CatatIcon />} show={canMonitorAll} />
         <NavItem id="fleet" href="/admin/fleet" label="Fleet" icon={<TruckIcon />} show={canMonitorAll} />
         <NavItem id="akun" href="/admin/operators" label="Akun" icon={<UsersIcon />} show={isAdmin} />
+        <NavItem id="log" href="/admin/log" label="Log" icon={<LogIcon />} show={authUser.role === "superadmin"} />
       </nav>
 
       {isOperator && (
@@ -165,4 +170,4 @@ export default function Topbar({ authUser, canMonitorAll, isAdmin, isOperator, o
     </div>
     </>
   );
-            }
+}
