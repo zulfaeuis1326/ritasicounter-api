@@ -15,6 +15,7 @@ import "@/styles/akun.css";
 import "@/styles/fleet-assign.css";
 import "@/styles/catat.css";
 import "@/styles/loader.css";
+import "@/styles/log.css";
 import RouteLoader from "@/components/RouteLoader";
 
 export default function App({ Component, pageProps }) {
